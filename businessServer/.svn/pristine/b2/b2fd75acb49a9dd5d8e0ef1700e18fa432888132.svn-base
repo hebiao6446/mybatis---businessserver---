@@ -1,0 +1,73 @@
+package com.business.service.impl;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONObject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+
+import com.common.Commonparam;
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.Group;
+import com.business.entity.User;
+import com.business.service.AttendanceManager;
+import com.business.service.CompanyManager;
+import com.business.service.UserManager;
+import com.json.BaseBean;
+
+@Service
+@Transactional
+public class AttendanceManagerImpl  implements AttendanceManager {
+	@Autowired
+	private SqlSessionTemplate  sqlSession;
+
+	@Override
+	public List<Attendance> findAttendanceList(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("Attendance.findAttendanceList", param);
+		return (List<Attendance>) obj;
+	}
+
+	@Override
+	public Object findAttendanceListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectOne("Attendance.findAttendanceListCount", param);
+		return obj;
+	}
+
+	@Override
+	public User findUserBaseInfo(Long userId) {
+		return (User) sqlSession.selectOne("User.findUserBaseInfo",userId);
+	}
+
+	@Override
+	public List<AttendDescript> findAttendDescriptList(
+			HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("AttendDescript.findAttendDescriptList", param);
+		return (List<AttendDescript>) obj;
+	}
+
+	@Override
+	public Object findAttendDescriptListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectOne("AttendDescript.findAttendDescriptListCount", param);
+		return obj;
+	}
+
+		
+
+}

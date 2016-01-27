@@ -1,0 +1,31 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.User;
+
+public interface AttendanceManager {
+
+	List<Attendance> findAttendanceList(HashMap<String, Object> param);
+
+	Object findAttendanceListCount(HashMap<String, Object> param);
+
+	User findUserBaseInfo(Long userId);
+
+	List<AttendDescript> findAttendDescriptList(HashMap<String, Object> param);
+
+	Object findAttendDescriptListCount(HashMap<String, Object> param);
+
+	List<Attendance> findSubUserAttendList(HashMap<String, Object> param);
+
+	void updateSignAttendance(HashMap param);
+
+	void insertSignAttendance(HashMap param);
+
+	void saveAttendDescInfo(HashMap<String, Object> map);
+	
+
+}

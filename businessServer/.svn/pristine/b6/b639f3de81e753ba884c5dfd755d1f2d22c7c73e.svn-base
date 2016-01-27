@@ -1,0 +1,156 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>商品管理</title>
+<style type="text/css">
+#table_content .tdCenter {
+	display: table-cell;
+	text-align: center;
+}
+
+#table_content .tdPointer {
+	cursor: pointer;
+	color: red;
+}
+</style>
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+	<style type="text/css">
+.tdCenter {
+	display: table-cell;
+	text-align: center;
+}
+
+.tdPointer {
+	cursor: pointer;
+}
+</style>
+
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+
+				<a href="${ctx}/pages/index.jsp?menue="> <i class="icon-home"></i>首页
+				</a> <a href="javascript:void(0)" class="current">待办事项列表</a>
+			</div>
+		</div>
+		<div class="container-fluid">
+			<div class="row-fluid">
+
+				<div class="widget-box">
+					<div class="widget-title">
+						<span class="icon"> <i class="icon-info-sign"></i>
+						</span>
+						<h5>待办事项维护</h5>
+					</div>
+					<div class="widget-content nopadding">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th width="2%"><input type="checkbox"
+										id="title-table-checkbox" name="title-table-checkbox" /></th>
+									<th width="4%">编号</th>
+									<th width="30%">内容</th>
+									<th width="8%">创建人</th>
+									<th width="5%">加急</th>
+									<th width="6%">周期</th>
+									<th width="10%">结束时间</th>
+									<th width="8%">是否完成</th>
+									<th width="10%">完成时间</th>
+									<th width="5%">详情</th>
+								</tr>
+							</thead>
+							<tbody id="table_content">
+
+							</tbody>
+						</table>
+						<jsp:include page="/common/pagenation.jsp"></jsp:include>
+						<div class="widget-title"
+							style="height: 40px; border: 1px solid #ccc; padding: 20px;">
+							<a class="btn btn-warning" style="margin: 0 10px;"
+								onclick="window.location.href=''">新&nbsp;&nbsp;&nbsp;&nbsp;增</a>
+							<a class="btn btn-warning" style="margin: 0 10px;" onclick="">删&nbsp;&nbsp;&nbsp;&nbsp;除</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+</body>
+</html>
+<script type="text/javascript">
+	$(function() {
+		loadData(1);
+	});
+	function loadData(page, size) {
+		setpageinfo(page, size);
+		$
+				.ajax({
+					type : 'post',
+					url : '${ctx}/things!findUserThingsList.action',
+					dataType : 'json',
+					data : pageinfo,
+					success : function(msg) {
+						if (msg.status == 200) {
+							var array = [];
+							for ( var i = 0; i < msg.rows.length; i++) {
+								var data = msg.rows[i];
+								array
+										.push('<tr><td class="tdCenter"><input type="checkbox" '
+								+ 'name="checkbox-tr" value="' 
+								+ data["thingsId"]+ '"/></td>');
+								array.push('<td class="tdCenter">'
+										+ data["thingsId"] + '</td>');
+								array.push('<td>' + data["content"] + '</td>');
+								array.push('<td class="tdCenter">'
+										+ data["createUserName"] + '</td>');
+								if (data["isEmergency"] == 'T') {
+									array.push('<td class="tdCenter">加急</td>');
+								} else {
+									array.push('<td></td>');
+								}
+								if (data["periodType"] == 1) {
+									array.push('<td class="tdCenter">每天一次</td>');
+
+								} else if (data["periodType"] == 2) {
+									array.push('<td class="tdCenter">每周一次</td>');
+								} else if (data["periodType"] == 3) {
+									array.push('<td class="tdCenter">每月一次</td>');
+								} else if (data["periodType"] == 4) {
+									array.push('<td class="tdCenter">每年一次</td>');
+								} else{
+									array.push('<td class="tdCenter">不循环</td>');
+								}								
+								array.push('<td class="tdCenter">'
+										+ data["endTime"] + '</td>');
+								if(data["isFinish"]=='T'){
+									array.push('<td class="tdCenter">已完成</td>');
+									array.push('<td class="tdCenter">'
+											+ data["finishTime"] + '</td>');
+								}else{
+									array.push('<td class="tdCenter">未完成 </td>');
+									array.push('<td class="tdCenter"> </td>');
+								}								
+								array.push('<td class="tdCenter"><span class="tdPointer" onclick="findThingsInfo('+data["thingsId"]+')">进入</span></td></tr>');
+							}
+							$('#table_content').html(array.join(''));
+							initpageInfo(msg.total);
+						}else{
+							alert(msg.msg);
+						}
+					}
+				});
+	}
+	
+	function findThingsInfo(thingsId){
+		window.location.href='${ctx}/things!findThingsInfo.action?thingsId='+thingsId;
+	}
+</script>
+
+

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Contacts">
+	<resultMap type="Contacts" id="ContactsMap">
+		<result column="contacts_id" property="contactsId" />
+		<result column="group_id" property="groupId" />
+		<result column="name" property="name" />
+		<result column="address" property="address" />
+		<result column="email" property="email" />
+		<result column="company" property="company" />
+		<result column="phone" property="phone" />
+		<result column="fax" property="fax" />
+		<result column="mobile" property="mobile" />
+		<result column="qq" property="qq" />
+		<result column="job" property="job" />
+		<result column="business" property="business" />
+		<result column="first_letter" property="firstLetter" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<select id="findGroupContactsList" parameterType="java.util.HashMap"
+		resultType="com.business.entity.ContactsGroupUser">
+		select c.contacts_id
+		contactsId, c.company, c.address,
+		c.business,
+		c.email, c.fax, c.group_id
+		groupId, c.job, c.mobile, c.name
+		contactsName, c.phone, c.qq,
+		g.name groupName,g.user_id userId,u.name
+		userName from tb_contacts c left
+		join tb_group g on c.group_id=g.group_id
+		left join tb_user u on
+		g.user_id=u.user_id where
+		c.delete_flag=1 and (u.role_id IN(${roleIds})
+		or u.user_id=#{userId})
+		<if test="company!=null and company!=''">
+			and c.company like '%${company}%'
+		</if>
+		<if test="name!=null and name!=''">
+			and c.name like '%${name}%'
+		</if>
+		<if test="business!=null and business!=''">
+			and c.business like '%${business}%'
+		</if>
+		<if test="phone!=null and phone!=''">
+			and (c.phone like '%${phone}%' or c.mobile like '%${phone}%')
+		</if>
+		<if test="job!=null and job!=''">
+			and c.job like '%${job}%'
+		</if>
+		order by u.user_id,g.group_id, c.contacts_id limit
+		${startIndex},${size}
+	</select>
+
+	<select id="findGroupContactsListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_contacts c left
+		join tb_group g on c.group_id=g.group_id
+		left join tb_user u on
+		g.user_id=u.user_id where
+		c.delete_flag=1 and (u.role_id IN(${roleIds})
+		or u.user_id=#{userId})
+		<if test="company!=null and company!=''">
+			and c.company like '%${company}%'
+		</if>
+		<if test="name!=null and name!=''">
+			and c.name like '%${name}%'
+		</if>
+		<if test="business!=null and business!=''">
+			and c.business like '%${business}%'
+		</if>
+		<if test="phone!=null and phone!=''">
+			and (c.phone like '%${phone}%' or c.mobile like '%${phone}%')
+		</if>
+		<if test="job!=null and job!=''">
+			and c.job like '%${job}%'
+		</if>
+	</select>
+
+	<update id="updateContactsInfo" parameterType="java.util.HashMap">
+		update tb_contacts
+		set
+		name=#{name}, address=#{address}, email=#{email},
+		first_letter=#{firstLetter},
+		company=#{company}, phone=#{phone},
+		fax=#{fax}, mobile=#{mobile},
+		qq=#{qq}, job=#{job},
+		business=#{business}, update_time=#{updateTime},
+		group_id=#{groupId}
+		where
+		contacts_id=#{contactsId} and delete_flag=1
+	</update>
+
+	<insert id="insertContactsInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_contacts(group_id, name, address, email, company, phone,
+		first_letter, fax,mobile, qq, job, business, update_time, delete_flag)
+		values(#{groupId}, #{name}, #{address}, #{email}, #{company},
+		#{phone}, #{firstLetter}, #{fax}, #{mobile}, #{qq}, #{job},
+		#{business}, #{updateTime}, 1)
+	</insert>
+
+	<select id="findContactsInfoByField" parameterType="java.util.HashMap"
+		resultMap="ContactsMap">
+		select * from tb_contacts where delete_flag=1 and
+		${field}=#{fieldValue}
+	</select>
+
+	<select id="findSubRoleIdList" parameterType="java.util.HashMap"
+		resultType="String">
+		{call pro_queryUserRoleid((select role_id from tb_user
+		where user_id=#{userId}))}
+	</select>
+
+	<update id="updateContactsGroup" parameterType="java.util.HashMap">
+		UPDATE
+		tb_contacts set group_id=(SELECT group_id from tb_group where
+		is_default='T' and user_id=#{userId} LIMIT 0,1) where
+		group_id=#{groupId}
+	</update>
+
+
+</mapper>

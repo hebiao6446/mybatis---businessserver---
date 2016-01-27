@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Push">
+	<resultMap type="Push" id="PushMap">
+		<result column="push_id" property="pushId" />
+		<result column="content" property="content" />
+		<result column="update_time" property="updateTime" />
+		<result column="type" property="type" />
+		<result column="delete_flag" property="deleteFlag" />
+	</resultMap>
+
+	<select id="findPushList" parameterType="java.util.HashMap"
+		resultMap="PushMap">
+
+		select * from tb_push where delete_flag=1
+
+		order by push_id
+		desc limit ${startIndex},${size}
+	</select>
+
+	<select id="findPushListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_push where delete_flag=1
+	</select>
+
+	<insert id="insertPushInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_push(content,type,update_time,delete_flag)
+		values(#{content},1,#{updateTime},1)
+	</insert>
+
+
+</mapper>

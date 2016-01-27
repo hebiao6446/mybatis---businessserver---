@@ -1,0 +1,55 @@
+h5 { font-size:12px; }
+pre, code { font-family: "Courier New", Courier, monospace; word-wrap:break-word; line-height:1.4; font-size:12px;}
+pre{background:#f6f6f6; border:#eee solid 1px; margin:1em 0.5em; padding:0.5em 1em;}
+#content { padding-left:50px; padding-right:50px; }
+#content h2 { font-size:20px; color:#069; padding-top:8px; margin-bottom:8px; }
+#content h3 { margin:8px 0; font-size:14px; COLOR:#693; }
+#content h4 { margin:8px 0; font-size:16px; COLOR:#690; }
+#content div.item { margin-top:10px; margin-bottom:10px; border:#eee solid 4px; padding:10px; }
+hr { clear:both; margin:7px 0; +margin: 0;
+border:0 none; font-size: 1px; line-height:1px; color: #069; background-color:#069; height: 1px; }
+.infobar { background:#fff9e3; border:1px solid #fadc80; color:#743e04; }
+
+/* line 189, ../scss/partials/_buttons.scss */
+.buttonStyle {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    -webkit-transition-property: background;
+    -moz-transition-property: background;
+    -o-transition-property: background;
+    transition-property: background;
+    -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+    background: #9cddd9;
+    color: white;
+    text-shadow: none;
+    border: none;
+    padding:4px;
+    padding-left:12px;
+    padding-right:12px;
+    font-size:16px;
+}
+
+/* line 198, ../scss/partials/_buttons.scss */
+.buttonStyle:hover {
+    background: #00b38b;
+    cursor:pointer;
+}
+
+/* line 201, ../scss/partials/_buttons.scss */
+.buttonStyle:active {
+    -webkit-transition-duration: 0s;
+    -moz-transition-duration: 0s;
+    -o-transition-duration: 0s;
+    transition-duration: 0s;
+    background: #00b38b;
+    color: #00647f;
+}
+/*
+.buttonStyle{width:64px;height:22px;line-height:22px;color:#369;text-align:center;background:url(images/buticon.gif) no-repeat left top;border:0;font-size:12px;}
+.buttonStyle:hover{ccursor:pointer;background:url(images/buticon.gif) no-repeat left -23px;}
+ */
+ 

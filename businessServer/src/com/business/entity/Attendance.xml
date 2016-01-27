@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Attendance">
+
+	<resultMap type="Attendance" id="AttendanceMap">
+		<result column="attendance_id" property="attendanceId" />
+		<result column="user_id" property="userId" />
+		<result column="in_sign_type" property="inSignType" />
+		<result column="in_time" property="inTime" />
+		<result column="out_time" property="outTime" />
+		<result column="out_sign_type" property="outSignType" />
+		<result column="status" property="status" />
+		<result column="day_time" property="dayTime" />
+		<result column="in_address" property="inAddress" />
+		<result column="out_address" property="outAddress" />
+		<result column="in_lng" property="inLng" />
+		<result column="in_lat" property="inLat" />
+		<result column="out_lng" property="outLng" />
+		<result column="out_lat" property="outLat" />
+		<result column="delete_flag" property="deleteFlag" />
+		<!-- 注意：下面属性列在数据库不存在 -->
+		<result column="myTime" property="myTime" />
+	</resultMap>
+	<sql id="datr">
+		AND delete_flag=1
+	</sql>
+
+	<select id="findAttendanceList" parameterType="java.util.HashMap"
+		resultMap="AttendanceMap">
+		select d.myTime,a.* from tb_attendance a RIGHT join (
+		<foreach collection="t" item="dayTime" separator="union">
+			select
+			#{dayTime} as myTime
+		</foreach>
+		) d on a.day_time=d.myTime
+		and a.user_id=#{userId}
+	</select>
+
+	<select id="findAttendanceListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_attendance where delete_flag=1 and
+		user_id=#{userId}
+	</select>
+
+	<select id="findSubUserAttendList" parameterType="java.util.HashMap"
+		resultType="com.business.entity.Attendance">
+		select u.user_id userId,u.name,a.attendance_id attendanceId,a.Day_time
+		DayTime, a.in_sign_type inSignType, a.in_time inTime, a.In_lng inLng
+		,a.In_lat inLat, a.In_address inAddress, a.Out_address outAddress,
+		a.Out_lat outLat,a.Out_lng outLng,a.out_sign_type outSignType,
+		a.out_time outTime, a.status from tb_user u LEFT JOIN
+		tb_attendance a
+		ON u.user_id=a.user_id AND a.Day_time=#{dayTime}
+		WHERE u.role_id
+		IN(${roleIds}) and u.delete_flag=1
+		order by u.role_id, u.user_id
+		<if test="index!=null">
+			limit #{index},#{size}
+		</if>
+	</select>
+
+	<select id="findAttendance" parameterType="java.util.HashMap"
+		resultMap="AttendanceMap">
+		select * from (SELECT #{dayTime} as myTime) t left join
+		tb_attendance a on user_id=#{userId} and
+		a.day_time=t.myTime
+	</select>
+
+	<insert id="insertSignAttendance" parameterType="java.util.HashMap">
+		insert into
+		tb_attendance (user_id, in_sign_type, in_time,
+		status, day_time,
+		delete_flag) values (#{userId},
+		#{signType}, #{time}, #{status},
+		#{dayTime}, 1)
+	</insert>
+
+	<update id="updateSignAttendance" parameterType="java.util.HashMap">
+		update
+		tb_attendance set
+		out_sign_type=#{signType}, out_time=#{time},
+		status=#{status} where user_id=#{userId} and
+		day_time=#{dayTime}
+	</update>
+
+<!-- 
+	<select id="findSubUserList" parameterType="com.business.entity.User"
+		resultType="java.util.HashMap">
+		select * from tb_user where role_id in(${value}) and
+		delete_flag=1 GROUP BY first_letter,userId
+	</select>
+
+	<select id="findUserChiDao" parameterType="java.util.HashMap"
+		resultType="AttendanceMap">
+		select count(*) from tb_attendance where user_id=#{userId}
+		<![CDATA[ and m.day_time>#{startTime} and day_time
+		>#{startTime} and day_time<#{endTime} and in_time >#{inTime} ]]>
+	</select>
+
+ -->
+    <!-- 获取上班时间 -->
+	<select id="findWorkOutTime" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		
+		select u.user_id userId,u.name,a.attendance_id attendanceId,a.Day_time
+		DayTime, a.in_sign_type inSignType, a.In_lng inLng
+		, a.Out_address outAddress,a.Out_lng outLng,a.out_sign_type outSignType,
+		a.out_time outTime, a.status from tb_user=#{dayTime}
+		WHERE u.company_id
+		
+	</select>
+
+
+</mapper>

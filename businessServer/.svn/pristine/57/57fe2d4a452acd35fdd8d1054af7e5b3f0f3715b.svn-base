@@ -1,0 +1,373 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>考勤管理</title>
+<style type="text/css">
+.white_content {
+	display: none;
+	position: fixed;
+	top: 30%;
+	left: 30%;
+	width: 405px;
+	height: 245px;
+	border: 2px solid lightblue;
+	background-color: #efefef;
+	z-index: 1002;
+	overflow: auto;
+}
+
+.menu {
+	color: red;
+	text-align: center;
+	cursor: pointer;
+}
+</style>
+
+
+</head>
+<body>
+
+
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+
+				<a href="#" class="current">考勤管理</a>
+			</div>
+		</div>
+
+		<div class="container-fluid">
+			<div class="row-fluid">
+
+				<div class="span12"
+					style="font-size: 14px; font-weight: bold; margin-bottom: 20px;">
+					开始时间:<input id="endTime" class="Wdate"
+						onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})" /> 结束时间:<input
+						id="startTime" class="Wdate"
+						onfocus="WdatePicker({maxDate:'#F{$dp.$D(\'startTime\');}',dateFmt:'yyyy-MM-dd'})" />
+					<button class="btn btn-warning" type="button"
+						class="btn btn-success" onclick="loadData(1)">查&nbsp;&nbsp;&nbsp;&nbsp;询</button>
+				</div>
+				<div class="widget-box">
+					<div class="widget-title">
+						<span class="icon"> <i class="icon-info-sign"></i>
+						</span>
+						<h5>考勤列表</h5>
+					</div>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th width="5%"><input type="checkbox"
+									id="title-table-checkbox" name="title-table-checkbox" /></th>
+								<th width="8%" style="font-size: 12px;">签到日期</th>
+								<th width="9%" style="font-size: 12px;">签到姓名</th>
+								<th width="10%" style="font-size: 12px;">签到时间</th>
+								<th width="10%" style="font-size: 12px;">签到方式</th>
+								<th width="10%" style="font-size: 12px;">签到地址</th>
+								<th width="10%" style="font-size: 12px;">签退时间</th>
+								<th width="10%" style="font-size: 12px;">签退方式</th>
+								<th width="10%" style="font-size: 12px;">签退地址</th>
+								<th width="8%" style="font-size: 12px;">考勤状态</th>
+								<th width="15%" style="font-size: 12px;">考勤说明</th>
+							</tr>
+						</thead>
+						<tbody id="table_content">
+
+						</tbody>
+					</table>
+
+					<div class="widget-title"
+						style="height: 40px; border: 1px solid #ccc; padding: 20px;">
+						<a class="btn btn-warning" style="margin-right: 20px;"
+							onclick="loadData(-1)">上&nbsp;&nbsp;&nbsp;&nbsp;页</a> <a
+							class="btn btn-warning" style="margin-right: 20px;"
+							onclick="loadData(-2)">下&nbsp;&nbsp;&nbsp;&nbsp;页</a>
+						<c:if
+							test="${empty param.userId||param.userId==''||param.userId==user.userId}">
+							<c:if test="${empty attendance.inTime||attendance.inTime==''}">
+								<a class="btn btn-warning" style="margin-right: 20px;"
+									onclick="updateAttendance(1)">签&nbsp;&nbsp;&nbsp;&nbsp;到</a>
+							</c:if>
+							<c:if
+								test="${(not empty attendance.inTime&&attendance.inTime!='')&&(empty attendance.outTime||attendance.outTime=='')}">
+								<a class="btn btn-warning" style="margin-right: 20px;"
+									onclick="updateAttendance(2)">签&nbsp;&nbsp;&nbsp;&nbsp;退</a>
+							</c:if>
+							<a class="btn btn-warning" style="margin-right: 20px;"
+								onclick="insertAttendDesc()">签到/签退情况说明</a>
+						</c:if>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+
+
+	<div id="divBlack" class="black_overlay"></div>
+	<div id="divWhite" class="white_content">
+		<input type="hidden" id="roleId" />
+		<div class="span4" style="margin: 0 16px;">
+			<div class="widget-box" style="width: 365px;">
+				<div class="widget-title">
+					<span class="icon"> <i class="icon-align-justify"></i>
+					</span>
+					<h5 id="title">签到/签退情况说明</h5>
+				</div>
+				<div class="widget-content nopadding">
+					<form class="form-horizontal">
+						<div class="control-group">
+							<label class="control-label" style="width: 100px;">信息内容：</label>
+							<div class="controls" style="margin-left: 10px;">
+								<textarea type="text" name="attendDescript" id="attendDescript"
+									style="width: 200px; margin-left: 10px; background-color: #FFF;"></textarea>
+							</div>
+						</div>
+						<div class="form-actions">
+							<a class="btn btn-success" style="margin: 0 20px;"
+								onclick="saveInfo()">保存</a> <a class="btn btn-success"
+								style="margin: 0 20px;" onclick="closeDialog()">取消</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+<script type="text/javascript">
+	$(function() {
+		loadData(1);
+	});
+
+	function insertAttendDesc() {
+		$('#content').val('');
+		$('#divWhite').css({
+			display : 'block'
+		});
+		$('#divBlack').css({
+			display : 'block'
+		});
+	}
+	function saveInfo() {
+		$.ajax({
+			type : "post",
+			url : '${ctx}/attendance!saveAttendDescInfo.action',
+			dataType : 'json',
+			data : {
+				content : $('#attendDescript').val()
+			},
+			success : function(msg, status) {
+				if (msg.status == 200) {
+					alert('保存成功！');
+					closeDialog();
+				} else {
+					alert(msg.msg);
+				}
+			}
+		});
+	}
+
+	function closeDialog() {
+		document.getElementById('divWhite').style.display = 'none';
+		document.getElementById('divBlack').style.display = 'none';
+	}
+
+	function updateAttendance(type) {
+		$.ajax({
+			type : "post",
+			url : '${ctx}/attendance!updateAttendance.action',
+			dataType : 'json',
+			data : {
+				signType : type
+			},
+			success : function(msg, status) {
+				if (msg.status == 200) {
+					alert('签到/签退成功！');
+					window.location.reload();
+				} else {
+					alert(msg.msg);
+				}
+			}
+		});
+	}
+
+	function loadData(page, size) {
+		if (size != undefined) {
+			pageinfo["size"] = size;
+		}
+		if (page == -1) {
+			if (pageinfo["page"] == 1)
+				return;
+			pageinfo["page"]--;
+		}
+
+		else if (page == -2)
+			pageinfo["page"]++;
+		else {
+			if (page >= pageinfo["tp"] && pageinfo["tp"] > 0)
+				pageinfo["page"] = pageinfo["tp"];
+			else
+				pageinfo["page"] = page;
+		}
+
+		pageinfo["userId"] = '${param.userId}';
+		pageinfo["fontTime"] = $('#startTime').val();
+		pageinfo["backTime"] = $('#endTime').val();
+
+		$
+				.ajax({
+					type : "post",
+					url : '${ctx}/attendance!findAttendanceList.action',
+					dataType : 'json',
+					data : pageinfo,
+					success : function(msg, status) {
+						var array = [];
+						if (msg.status == 200) {
+							var sum = (pageinfo["page"] - 1) * pageinfo["size"]
+									+ 1;
+							if (msg.rows != null) {
+								for ( var i = 0; i < msg.rows.length; i++) {
+									var data = msg.rows[i];
+									array.push('<tr>');
+									array
+											.push('<td style="cursor:pointer;text-align:center;">'
+													+ (sum++) + '</td>');
+									array
+											.push('<td style="cursor:pointer;text-align:center;">'
+													+ data["myTime"] + '</td>');
+									array
+											.push('<td style="cursor:pointer;text-align:center;">'
+													+ data["name"] + '</td>');
+									if (data["attendanceId"] == 0
+											|| data["attendanceId"] == '0') {
+										array.push('<td colspan="8">未考勤</td>');
+									} else {
+										array
+												.push('<td style="text-align:center;">'
+														+ data["inTime"]
+														+ '</td>');
+
+										var inSignType = $
+												.trim(data["inSignType"]);
+
+										if (inSignType == 1
+												|| inSignType == '1') {
+											array.push('<td>手机</td>');
+										} else if (inSignType == 2
+												|| inSignType == '2') {
+											array.push('<td>后台</td>');
+										} else if (inSignType == 3
+												|| inSignType == '3') {
+											array.push('<td>其他</td>');
+										} else {
+											array.push('<td></td>');
+										}
+										array
+												.push('<td style="text-align:center;">'
+														+ data["inAddress"]
+														+ '</td>');
+										array
+												.push('<td style="text-align:center;">'
+														+ data["outTime"]
+														+ '</td>');
+										var outSignType = $
+												.trim(data["inSignType"]);
+										if (outSignType == 1
+												|| outSignType == '1') {
+											array.push('<td>手机</td>');
+										} else if (outSignType == 2
+												|| outSignType == '2') {
+											array.push('<td>后台</td>');
+										} else if (outSignType == 3
+												|| outSignType == '3') {
+											array.push('<td>其他</td>');
+										} else {
+											array.push('<td></td>');
+										}
+										array
+												.push('<td style="text-align:center;">'
+														+ data["outAddress"]
+														+ '</td>');
+
+										if (data["status"] == 1) {
+											array
+													.push('<td style="text-align:center;">迟到</td>');
+										} else if (data["status"] == 2) {
+											array
+													.push('<td style="text-align:center;">早退</td>');
+										} else if (data["status"] == 3) {
+											array
+													.push('<td style="text-align:center;">迟到早退</td>');
+										} else {
+											array
+													.push('<td style="text-align:center;">正常</td>');
+										}
+										array
+												.push('<td style="text-align:center;">'
+														+ '<a href="javascript:void(0)" onclick="query('
+														+ data["userId"]
+														+ ')" class="menu">查看说明</a></td>');
+									}
+								}
+								array.push('</tr>');
+								$('#table_content').html(array.join(''));
+							} else {
+								pageinfo["page"]--;
+							}
+						} else {
+							alert(msg.msg);
+						}
+					}
+				});
+	}
+
+	function deleteData() {
+		var ids = [];
+		$('input[name="checkbox-tr"]:checked').each(function(index, data) {
+			ids.push($(this).val());
+		});
+		if (ids.length == 0) {
+			alert('请选择数据!');
+			return;
+		} else {
+			if (window.confirm('确定删除吗？')) {
+				$.ajax({
+					type : "post",
+					url : '${ctx}/user!deleteAllData.action',
+					dataType : 'json',
+					data : {
+						table : "attendance",
+						fields : ids.join(',')
+					},
+					success : function(msg, status) {
+						if (msg.status == 200) {
+							alert('删除成功!');
+							loadData(1);
+						} else {
+							alert(msg.msg);
+
+						}
+					}
+				});
+			}
+		}
+
+	}
+
+	function query(userId) {
+		window.location.href = "${ctx}/pages/attendacedescriptManagerList.jsp?userId="
+				+ userId;
+	}
+</script>
+
+

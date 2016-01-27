@@ -1,0 +1,33 @@
+package com.business.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Company;
+import com.business.service.CompanyManager;
+
+@Service
+@Transactional
+public class CompanyManagerImpl implements CompanyManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Company> findCompanyList(HashMap<String, Object> param) {
+		return (List<Company>) sqlSession.selectList("Company.findCompanyList",
+				param);
+	}
+
+	@Override
+	public Object findCompanyListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession
+				.selectOne("Company.findCompanyListCount", param);
+		return obj;
+	}
+
+}

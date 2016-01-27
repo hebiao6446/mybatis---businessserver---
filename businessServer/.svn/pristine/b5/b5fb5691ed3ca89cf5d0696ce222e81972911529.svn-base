@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Contacts">
+
+	<resultMap type="Contacts" id="ContactsMap">
+		<result column="contacts_id" property="contactsId" />
+		<result column="group_id" property="groupId" />
+		<result column="name" property="name" />
+		<result column="address" property="address" />
+		<result column="email" property="email" />
+		<result column="company" property="company" />
+		<result column="phone" property="phone" />
+		<result column="fax" property="fax" />
+		<result column="mobile" property="mobile" />
+		<result column="qq" property="qq" />
+		<result column="job" property="job" />
+		<result column="business" property="business" />
+		<result column="first_letter" property="firstLetter" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	
+	
+	
+	<select id="findGroupContactsList" parameterType="java.util.HashMap" resultMap="ContactsMap">
+		select * from tb_contacts where delete_flag=1 and  group_id=#{groupId} 
+
+		order by first_letter desc limit ${startIndex},${size}
+	
+	</select>
+
+	<select id="findGroupContactsListCount" parameterType="java.util.HashMap"  resultType="Long">
+		select count(*) from tb_contacts where delete_flag=1 and  group_id=#{groupId} 
+
+
+	</select>
+	
+	
+	<update id="updateContactsInfo" parameterType="java.util.HashMap">
+		update tb_contacts  set
+		name=#{name},address=#{address},email=#{email},first_letter=#{firstLetter},company=#{company},phone=#{phone},fax=#{fax},mobile=#{mobile},qq=#{qq},job=#{job},business=#{business},update_time=#{updateTime} where contacts_id=#{contactsId} and delete_flag=1
+	</update>
+	
+	
+	<insert id="insertContactsInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_contacts(group_id,name,address,email,company,phone,first_letter,fax,mobile,qq,job,business,update_time,delete_flag)
+		values(#{groupId},#{name},#{address},#{email},#{company},#{phone},#{firstLetter},#{fax},#{mobile},#{qq},#{job},#{business},#{updateTime},1)
+	</insert>
+	
+		<select id="findContactsInfoByField" parameterType="java.util.HashMap"
+		resultMap="ContactsMap">
+		select * from tb_contacts where delete_flag=1 and ${field}=#{fieldValue}
+	</select>
+	
+			
+</mapper>

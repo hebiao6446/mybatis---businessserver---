@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Blessings">
+	<resultMap type="Blessings" id="BlessingsMap">
+		
+		<result column="blessings_id" property="blessingsId" />
+		<result column="blessings_type_id" property="blessingsTypeId" />
+		<result column="content" property="content" />
+	</resultMap>
+
+
+	<select id="findBlessingsList" parameterType="java.util.HashMap"
+		resultMap="BlessingsMap">
+
+		select * from tb_blessings where blessings_type_id=#{blessingsTypeId}
+	
+		order by blessings_id  desc limit ${startIndex},${size}
+	</select>
+
+	<select id="findBlessingsListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_blessings  where blessings_type_id=#{blessingsTypeId}
+	</select>
+	
+	
+	
+		<update id="updateBlessingsInfo" parameterType="java.util.HashMap">
+		update
+		tb_blessings set content=#{content},blessings_type_id=#{blessingsTypeId}  where  blessings_id=#{blessingsId}
+	</update>
+
+
+	<insert id="insertBlessingsInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_blessings(content,blessings_type_id)
+		values(#{content},#{blessingsTypeId})
+	</insert>
+
+	
+	
+	
+	
+</mapper>

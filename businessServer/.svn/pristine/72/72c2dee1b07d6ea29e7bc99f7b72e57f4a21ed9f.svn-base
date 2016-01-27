@@ -1,0 +1,8 @@
+##html
+imagepath=http://127.0.0.1:8080/chjservice/common!findPicture.action?path=
+##img staored path
+imageStorePath=E:/chj-img
+##yhd-chjzhuanqu-url
+returnUrl=http://cms.yhd.com/cmsPage/show.do?pageId=68620
+##SBUX-productId
+productId=1373

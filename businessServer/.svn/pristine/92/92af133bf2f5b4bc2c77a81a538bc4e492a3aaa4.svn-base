@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Company">
+
+	<resultMap type="Company" id="CompanyMap">
+		<result column="company_id" property="companyId" />
+		<result column="name" property="name" />
+		<result column="introduce" property="introduce" />
+		<result column="address" property="address" />
+		<result column="email" property="email" />
+		<result column="logo" property="logo" />
+		<result column="phone" property="phone" />
+		<result column="out_work" property="outWork" />
+		<result column="report_work" property="reportWork" />
+		<result column="type" property="type" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+		<result column="status" property="status" />
+		<result column="linkman" property="linkman" />
+		<result column="disable_time" property="disableTime" />
+		<result column="enable_time" property="enableTime" />
+	</resultMap>
+
+	<select id="findUserCompany" parameterType="Long" resultMap="CompanyMap">
+		select * from tb_company where company_id in(
+		select company_id from
+		tb_role where role_id=#{value})
+	</select>
+
+
+	<select id="findCompanyList" parameterType="java.util.HashMap"
+		resultMap="CompanyMap">
+		select * from tb_company c where delete_flag=1 and type=1
+		<if test="name!=null and name!=''">
+			and name like '%${name}%'
+		</if>
+		<if test="linkman!=null and linkman!=''">
+			and linkman like '%${linkman}%'
+		</if>
+		<if test="phone!=null and phone!=''">
+			and phone like '%${phone}%'
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and enable_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and enable_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and disable_time>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and disable_time<=#{endDisable}]]>
+		</if>
+		order by company_id limit ${startIndex},${size}
+	</select>
+
+	<select id="findCompanyListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_company where delete_flag=1 and type=1
+		<if test="name!=null and name!=''">
+			and name like '%${name}%'
+		</if>
+		<if test="linkman!=null and linkman!=''">
+			and linkman like '%${linkman}%'
+		</if>
+		<if test="phone!=null and phone!=''">
+			and phone like '%${phone}%'
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and enable_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and enable_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and disable_time>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and disable_time<=#{endDisable}]]>
+		</if>
+	</select>
+
+	<select id="findCompanyAccountList" parameterType="java.util.HashMap"
+		resultType="com.business.entity.UserRoleCompany">
+		select u.user_id userId,u.account,u.phone userPhone,u.register_time
+		registerTime,u.last_login lastLogin,u.attendance,u.status,u.name
+		userName, r.role_id
+		roleId,r.name roleName, r.parent_id
+		parentId,c.company_id
+		companyId,c.name companyName from tb_user u left
+		join tb_role r
+		on u.role_id=r.role_id left join tb_company c
+		on
+		r.company_id=c.company_id where
+		u.delete_flag=1 and c.delete_flag=1 and
+		c.type=1
+		<if test="name!=null and name!=''">
+			and (u.name like '%${name}%' or u.account like
+			'%${name}%')
+		</if>
+		<if test="phone!=null and phone!=''">
+			and u.phone like '%${phone}%'
+		</if>
+		<if
+			test="companyId!=null and companyId!='' and companyId!=0 and companyId!='0'">
+			and c.company_id=#{companyId}
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and u.register_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and u.register_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and u.last_login>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and u.last_login<=#{endDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and u.last_login<=#{endDisable}]]>
+		</if>
+		order by user_id limit ${startIndex},${size}
+	</select>
+
+
+	<select id="findCompanyAccountListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_user u left join tb_role r on
+		u.role_id=r.role_id left join tb_company c on
+		r.company_id=c.company_id where
+		u.delete_flag=1 and c.delete_flag=1 and
+		c.type=1
+		<if test="name!=null and name!=''">
+			and (u.name like '%${name}%' or u.account like
+			'%${name}%')
+		</if>
+		<if test="phone!=null and phone!=''">
+			and u.phone like '%${phone}%'
+		</if>
+		<if
+			test="companyId!=null and companyId!='' and companyId!=0 and companyId!='0'">
+			and c.company_id=#{companyId}
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and u.register_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and u.register_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and u.last_login>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and u.last_login<=#{endDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and u.last_login<=#{endDisable}]]>
+		</if>
+	</select>
+
+	<update id="updateCompanyInfo" parameterType="java.util.HashMap">
+		update tb_company
+		set
+		name=#{name}, address=#{address},
+		email=#{email},report_work=#{reportWork},out_work=#{outWork},linkman=#{linkman},disable_time=#{disableTime},enable_time=#{enableTime},
+		introduce=#{introduce},phone=#{phone},update_time=#{updateTime} where
+		company_id=#{companyId} and delete_flag=1
+	</update>
+	<select id="findLastId" resultType="Long">
+		select company_id from
+		tb_company order by company_id desc limit 0,1
+	</select>
+	<insert id="insertCompanyInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_company(name,address,email,introduce,linkman,phone,update_time,disable_time,enable_time,delete_flag,type,status,report_work,out_work)
+		values(#{name},#{address},#{email},#{introduce},#{linkman},#{phone},#{updateTime},#{disableTime},#{enableTime},1,1,1,#{reportWork},#{outWork})
+	</insert>
+
+	<insert id="registerUser" parameterType="java.util.HashMap">
+		insert into
+		tb_company(name,phone,update_time,delete_flag)
+		values(#{name},#{phone},#{updateTime},1)
+	</insert>
+
+	<select id="findCompanyInfo" parameterType="java.lang.String"
+		resultMap="CompanyMap">
+		select * from tb_company where delete_flag=1 and
+		company_id=#{companyId}
+	</select>
+
+	<insert id="insertCompanyRole" parameterType="java.util.HashMap">
+		insert into
+		tb_role(company_id,name,parent_id,update_time,delete_flag)
+		values(#{companyId},'管理员',0,#{updateTime},1)
+	</insert>
+
+
+	<update id="deleteComapnyAllData" parameterType="java.util.HashMap">
+		update ${table} set status=2 where ${pk} in
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			${item}
+		</foreach>
+	</update>
+
+	<update id="deleteComapnyQllData" parameterType="java.util.HashMap">
+		update ${table} set status=1 where ${pk} in
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+</mapper>

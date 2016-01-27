@@ -1,0 +1,52 @@
+package com.business.service.impl;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONObject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.common.Commonparam;
+import com.business.entity.Company;
+import com.business.entity.Group;
+import com.business.entity.User;
+import com.business.service.CompanyManager;
+import com.business.service.UserManager;
+import com.json.BaseBean;
+
+@Service
+@Transactional
+public class CompanyManagerImpl  implements CompanyManager {
+	@Autowired
+	private SqlSessionTemplate  sqlSession;
+
+	@Override
+	public List<Company> findCompanyList(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("Company.findCompanyList", param);
+		return (List<Company>) obj;
+	}
+
+	@Override
+	public Object findCompanyListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectOne("Company.findCompanyListCount", param);
+		return obj;
+	}
+
+
+	
+
+}

@@ -1,0 +1,214 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/taglibs.jsp"%>
+<%
+	// 将 expire 时间置为很久以前的时间
+	response.setHeader("Expires", "Sat, 6 May 1995 12:00:00 GMT");
+
+	// 设置标准的 HTTP/1.1 no-cache 首部
+	response.setHeader("Cache-Control",
+			"no-store, no-cache, must-revalidate");
+
+	// 设置 IE 扩展 HTTP/1.1 no-cache 首部（利用 addHeader）
+	response.addHeader("Cache-Control", "post-check=0, pre-check=0");
+
+	// 设置标准的 HTTP/1.0 no-cache 首部
+	response.setHeader("Pragma", "no-cache");
+	if (request.getSession(false) != null) {
+		session.setAttribute("user", "");
+		session.invalidate();
+	}
+%>
+<%
+	String path = request.getContextPath();
+	String basePath = request.getScheme() + "://"
+			+ request.getServerName() + ":" + request.getServerPort()
+			+ path + "/";
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>商务行天下后台管理系统</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="${ctx}/css/bootstrap.min.css" />
+<link rel="stylesheet" href="${ctx}/css/bootstrap-responsive.min.css" />
+<link rel="stylesheet" href="${ctx}/css/matrix-login.css" />
+<link href="${ctx}/font-awesome/css/font-awesome.css" rel="stylesheet" />
+<script type="text/javascript" src="${ctx}/js/jquery.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+
+		if (document.addEventListener) {//如果是Firefox   
+			document.addEventListener("keypress", fireFoxHandler, true);
+		} else {
+			document.attachEvent("onkeypress", ieHandler);
+		}
+		function fireFoxHandler(evt) {
+
+			//alert("firefox"); 
+			if (evt.keyCode == 13) {
+				if (evt.target.id == 'pass' || evt.target.id == 'username') {
+					logintest();//你的代码 
+				}
+
+			}
+		}
+		function ieHandler(evt) {
+			//alert("IE");  
+			if (evt.keyCode == 13) {
+				if (evt.target.id == 'pass' || evt.target.id == 'username') {
+					logintest();//你的代码 
+				}
+			}
+		}
+		var suer = decodeURI(getCookie("username"));
+
+		if (suer != null && suer != 'null') {
+			$('#username').val(decodeURI(suer));
+		}
+
+		if (getCookie("remember") != null && getCookie("remember")) {
+
+			$('#pass').val(getCookie("password"));
+			$('#checkRemember').attr("checked", true);
+		} else {
+
+			$('#pass').val("");
+			$('#checkRemember').attr("checked", false);
+		}
+
+	});
+	function logintest() {
+
+		var username = $('#username').val();
+		var pass = $('#pass').val();
+		if (username == "" || pass == "") {
+			alert('账号和密码不为空');
+			return;
+		}
+		$.ajax({
+			type : "post",
+			url : '${ctx}/user!userLogin.action',
+			dataType : 'json',
+			data : {
+				username : username,
+				password : pass
+			},
+			timeout : 10000,
+			success : function(msg, status) {
+				if (msg.status == 200) {
+					SetCookie("username", encodeURI($('#username').val()));
+					if ($('#checkRemember').attr("checked")) {
+						SetCookie("password", $('#pass').val());
+						SetCookie("remember", $('#checkRemember').attr(
+								"checked"));
+					} else {
+						SetCookie("password", "");
+						SetCookie("remember", "");
+					}
+					reset();
+					location.href = "${ctx}/pages/index.jsp";
+
+				} else
+					alert('账号或密码错误!');
+			}
+
+		});
+	}
+	function reset() {
+		$('#username').val('');
+		$('#pass').val('');
+	}
+	function SetCookie(name, value)//两个参数，一个是cookie的名子，一个是值
+	{
+		var Days = 300; //此 cookie 将被保存 30 天
+		var exp = new Date(); //new Date("December 31, 9998");
+		exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+		document.cookie = name + "=" + escape(value) + ";expires="
+				+ exp.toGMTString();
+	}
+	function getCookie(name)//取cookies函数       
+	{
+		var arr = document.cookie.match(new RegExp("(^| )" + name
+				+ "=([^;]*)(;|$)"));
+		if (arr != null)
+			return (arr[2]);
+		return null;
+
+	}
+	function delCookie(name)//删除cookie
+	{
+		var exp = new Date();
+		exp.setTime(exp.getTime() - 1);
+		var cval = getCookie(name);
+		if (cval != null)
+			document.cookie = name + "=" + cval + ";expires="
+					+ exp.toGMTString();
+	}
+</script>
+
+
+</head>
+
+<body>
+	<div id="loginbox">
+
+		<table align="center" cellpadding="0" cellspacing="0">
+			<tr>
+				<td style="padding-top: 20px;" colspan="2" align="center"><img
+					src="${ctx}/img/logo.png" alt="Logo" /></td>
+			</tr>
+			<tr>
+				<td><div class="main_input_box">
+						<span class="add-on bg_lg"><i class="icon-user"></i> </span>
+					</div></td>
+				<td><div class="main_input_box">
+						<input style="width: 300px" type="text" placeholder="用户名"
+							id="username" value="" />
+					</div></td>
+			</tr>
+
+			<tr>
+				<td style="padding-top: 20px;">
+					<div class="main_input_box">
+						<span class="add-on bg_ly"><i class="icon-lock"></i> </span>
+					</div></td>
+				<td style="padding-top: 20px;"><div class="main_input_box">
+						<input style="width: 300px" type="password" placeholder="密码"
+							id="pass" value="" />
+					</div></td>
+			</tr>
+
+			<tr>
+				<td colspan="2" style="padding-top: 20px;">
+
+					<table align="left" cellpadding="0" cellspacing="0">
+						<tr>
+							<td valign="top"><input type="checkbox" name="checkbox"
+								id="checkRemember" />
+							</td>
+
+							<td valign="bottom"><label for="checkRemember"
+								style="color: #FFF; font-size: 12px;">记住密码</label>
+							</td>
+							<td valign="bottom" ><a href="${ctx}/pages/registerManagerUpdate.jsp" style="color: #FFF;padding:5px 0 0 50px; font-size: 12px; ">免费注册</a></td>
+						</tr>
+					</table></td>
+			</tr>
+
+			<tr>
+				<td colspan="2" style="padding-top: 20px;">
+					<div class="main_input_box">
+						<button class="btn btn-success" onclick="logintest()"
+							style="width: 355px; text-align: center;">登录</button>
+					</div></td>
+			</tr>
+		</table>
+	</div>
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/matrix.login.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>考勤管理</title>
+<style type="text/css">
+.white_content {
+	display: none;
+	position: fixed;
+	top: 30%;
+	left: 30%;
+	width: 405px;
+	height: 245px;
+	border: 2px solid lightblue;
+	background-color: #efefef;
+	z-index: 1002;
+	overflow: auto;
+}
+
+.menu {
+	color: red;
+	text-align: center;
+	cursor: pointer;
+}
+</style>
+
+
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+
+				<a href="#" class="current">考勤管理</a>
+			</div>
+		</div>
+
+		
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-title">
+							<span class="icon"> <i class="icon-info-sign"></i> </span>
+							<h5>考勤列表</h5>
+						</div>
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th width="10%"><input type="checkbox"
+										id="title-table-checkbox" name="title-table-checkbox" />
+									</th>
+									<th width="10%" style="font-size: 12px;">签到姓名</th>
+									<th width="10%" style="font-size: 12px;">签到时间</th>
+									<th width="10%" style="font-size: 12px;">签到手机号</th>
+									<th width="10%" style="font-size: 12px;">签到地址</th>
+									<th width="10%" style="font-size: 12px;">签退时间</th>
+									<th width="10%" style="font-size: 12px;">签退手机号</th>
+									<th width="10%" style="font-size: 12px;">签退地址</th>
+									<th width="10%" style="font-size: 12px;">考勤状态</th>
+									<th width="10%" style="font-size: 12px;">考勤说明</th>
+
+
+
+
+								</tr>
+							</thead>
+							<tbody id="table_content">
+
+							</tbody>
+						</table>
+						<jsp:include page="/common/pagenation.jsp"></jsp:include>
+						<div class="widget-title"
+							style="height: 40px; border: 1px solid #ccc; padding-bottom: 4px; padding-left: 20px;">
+
+
+							<div class="pagination alternate"
+								style="margin-left: 0px; margin-top: 8px; float: left;">
+
+								<button class="btn btn-warning" onclick="">签&nbsp;&nbsp;&nbsp;&nbsp;到</button>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<button class="btn btn-warning" onclick="">签&nbsp;&nbsp;&nbsp;&nbsp;退</button>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<c:if test="${user.isLeader==1}">
+									<button class="btn btn-warning"
+										onclick="window.location.href='${ctx}/pages/mySubattendanceManagerList.jsp'">下属人员</button>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+									</c:if>
+
+
+
+
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+
+</body>
+</html>
+<script type="text/javascript">
+	var rowData = [];
+	$(function() {
+
+		loadData(1);
+
+	});
+	function loadData(page, size) {
+		if (size != undefined) {
+			pageinfo["size"] = size;
+			$('#pagesize').html(size);
+		}
+		if (page == -1)
+			pageinfo["page"]--;
+		else if (page == -2)
+			pageinfo["page"]++;
+		else {
+			if (page >= pageinfo["tp"] && pageinfo["tp"] > 0)
+				pageinfo["page"] = pageinfo["tp"];
+			else
+				pageinfo["page"] = page;
+		}
+		pageinfo["userId"] = '${param.userId}';
+		$
+				.ajax({
+					type : "post",
+					url : '${ctx}/attendance!findAttendanceList.action',
+					dataType : 'json',
+					data : pageinfo,
+					success : function(msg, status) {
+						var array = [];
+						if (msg.status == 200) {
+							rowData = msg.rows;
+							for ( var i = 0; i < msg.rows.length; i++) {
+								var data = msg.rows[i];
+								array.push('<tr>');
+
+								array
+										.push('<td style="cursor:pointer;text-align:center;"><input type="checkbox" name="checkbox-tr" value="' + data["attendanceId"]+ '"/></td>');
+								array
+										.push('<td style="cursor:pointer;text-align:center;">'
+												+ data["name"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["inTime"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["inPhone"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["inAddress"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["outTime"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["outPhone"] + '</td>');
+								array.push('<td style="text-align:center;">'
+										+ data["outAddress"] + '</td>');
+
+								if (data["status"] == 1) {
+									array.push('<td>迟到</td>');
+								}
+								if (data["status"] == 2) {
+									array.push('<td>早退</td>');
+								}
+								if (data["status"] == 3) {
+									array.push('<td>迟到早退</td>');
+								}
+								array
+										.push('<td><a href="javascript:void(0)" onclick="query('
+												+ data["userId"]
+												+ ')" class="menu">查看说明</a></td>');
+
+								array.push('</tr>');
+							}
+							$('#table_content').html(array.join(''));
+							array = null;
+							initpageInfo(msg.total);
+
+						} else {
+							alert(msg.msg);
+
+						}
+					}
+				});
+	}
+
+	function deleteData() {
+		var ids = [];
+		$('input[name="checkbox-tr"]:checked').each(function(index, data) {
+			ids.push($(this).val());
+		});
+		if (ids.length == 0) {
+			alert('请选择数据!');
+			return;
+		} else {
+			if (window.confirm('确定删除吗？')) {
+				$.ajax({
+					type : "post",
+					url : '${ctx}/user!deleteAllData.action',
+					dataType : 'json',
+					data : {
+						table : "attendance",
+						fields : ids.join(',')
+					},
+					success : function(msg, status) {
+						if (msg.status == 200) {
+							alert('删除成功!');
+							loadData(1);
+						} else {
+							alert(msg.msg);
+
+						}
+					}
+				});
+			}
+		}
+
+	}
+
+	function query(userId) {
+
+		window.location.href = "${ctx}/pages/attendacedescriptManagerList.jsp?userId="
+				+ userId;
+	}
+</script>
+</body>
+</html>
+

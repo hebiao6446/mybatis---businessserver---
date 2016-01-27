@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User">
+
+	<resultMap type="User" id="UserMap">
+		<result column="user_id" property="userId" />
+		<result column="account" property="account" />
+		<result column="name" property="name" />
+		<result column="first_letter" property="firstLetter" />
+		<result column="password" property="password" />
+		<result column="attendance" property="attendance" />
+		<result column="phone" property="phone" />
+		<result column="role_id" property="roleId" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+		<result column="head_image" property="headImage" />
+		<result column="status" property="status" />
+		<result column="last_login" property="lastLogin" />
+		<result column="register_time" property="registerTime" />
+
+	</resultMap>
+
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+	<select id="userLogin" parameterType="net.sf.json.JSONObject"
+		resultMap="UserMap">
+		select * from tb_user where 1=1
+		<include refid="User.dataFilter" />
+		and (account=#{username} or phone=#{username}) and
+		password=#{password}
+	</select>
+	<select id="findUserInfo" parameterType="net.sf.json.JSONObject"
+		resultMap="UserMap">
+		select * from tb_user where user_id=#{userId}
+	</select>
+	<select id="findUserCompanyId" parameterType="Long" resultType="Long">
+		select company_id from tb_role where role_id=#{value}
+	</select>
+	<select id="findUserCompanyType" parameterType="Long"
+		resultType="Integer">
+		select type from tb_company where company_id in(
+		select
+		company_id from tb_role where role_id=#{value})
+	</select>
+
+	<select id="findUserRoleChidren" parameterType="Long"
+		resultType="Long">
+		select count(*) from tb_role where delete_flag=1 and
+		parent_id=#{value}
+	</select>
+
+
+	<update id="deleteAllData" parameterType="java.util.HashMap">
+		update ${table} set delete_flag=2 where ${pk} in
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<select id="findMySubContactsList" parameterType="java.util.HashMap"
+		resultType="java.util.HashMap">
+		select u.user_id as userId, u.name, u.account, u.phone,
+		u.attendance, u.update_time as updateTime, r.name as rolename,
+		u.role_id as roleId from tb_user u,tb_role r where u.role_id
+		in(${roleId})and r.company_id=#{companyId} and r.role_id=u.role_id and
+		u.delete_flag=1
+	</select>
+
+
+	<select id="findUserRoleList" parameterType="java.util.HashMap"
+		resultMap="UserMap">
+		select * from tb_user where delete_flag=1 and
+		role_id=#{roleId}
+		order by first_letter asc limit ${startIndex},${size}
+
+	</select>
+
+	<select id="findUserAccountInfo" parameterType="java.util.HashMap"
+		resultMap="UserMap">
+		select * from tb_user where delete_flag=1 and
+		${username}=#{password}
+	</select>
+
+	<select id="findUserRoleListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_user where delete_flag=1 and
+		role_id=#{roleId}
+	</select>
+
+	<select id="findUserInfoByField" parameterType="java.util.HashMap"
+		resultMap="UserMap">
+		select * from tb_user where delete_flag=1 and
+		${field}=#{fieldValue}
+	</select>
+
+	<select id="findUserBaseInfo" parameterType="Long" resultMap="UserMap">
+		select * from tb_user where user_id=#{userId}
+	</select>
+
+	<select id="findUserSubRoleIdList" parameterType="Long"
+		resultType="String">
+		{call pro_queryUserRoleid((select role_id from tb_user
+		where user_id=#{userId}))}
+	</select>
+	<select id="finduserAccountList" parameterType="java.util.HashMap"
+		resultMap="UserMap">
+		select * from tb_user where delete_flag=1
+		<if test="name!=null and name!=''">
+			and (name like '%${name}%' or account like '%${name}%')
+		</if>
+		<if test="phone!=null and phone!=''">
+			and phone like '%${phone}%'
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and register_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and register_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and last_login>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and last_login<=#{endDisable}]]>
+		</if>
+		and role_id in(
+		select role_id from
+		tb_role where company_id
+		in(select
+		company_id from tb_company where
+		type=0 and delete_flag=1)) order by
+		user_id limit ${startIndex},${size}
+	</select>
+
+	<select id="finduserAccountListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_user where delete_flag=1
+		<if test="name!=null and name!=''">
+			and (name like '%${name}%' or account like '%${name}%')
+		</if>
+		<if test="phone!=null and phone!=''">
+			and phone like '%${phone}%'
+		</if>
+		<if test="startEnable!=null and startEnable!=''">
+		<![CDATA[ and register_time>=#{startEnable}]]>
+		</if>
+		<if test="endEnable!=null and endEnable!=''">
+		<![CDATA[ and register_time<=#{endEnable}]]>
+		</if>
+		<if test="startDisable!=null and startDisable!=''">
+		<![CDATA[ and last_login>=#{startDisable}]]>
+		</if>
+		<if test="endDisable!=null and endDisable!=''">
+		<![CDATA[ and last_login<=#{endDisable}]]>
+		</if>
+		and role_id in(
+		select role_id from
+		tb_role where company_id
+		in(select
+		company_id from tb_company where
+		type=0 and delete_flag=1))
+	</select>
+
+
+	<update id="deleteUserAllData" parameterType="java.util.HashMap">
+		update ${table} set status=2 where ${pk} in
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			${item}
+		</foreach>
+	</update>
+
+	<update id="deleteUserQllData" parameterType="java.util.HashMap">
+		update ${table} set status=1 where ${pk} in
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+
+	<insert id="insertCompanyUser" parameterType="java.util.HashMap">
+		insert into
+		tb_user(account, update_time, delete_flag, phone, attendance,
+		password, status, role_id,name, first_letter, register_time)
+		values(#{account}, #{updateTime}, 1, #{phone}, 'T', #{password}, 1,
+		#{roleId}, #{name}, #{firstLetter}, #{updateTime})
+	</insert>
+
+	<select id="findAllUserList" parameterType="Long" resultType="java.util.HashMap">
+		select user_id as userId,name from tb_user where
+		delete_flag=1 AND
+		role_id in(select role_id from tb_role where
+		company_id =#{companyId})
+	</select>
+
+</mapper>

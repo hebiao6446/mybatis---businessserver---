@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ProductImg">
+	<resultMap type="ProductImg" id="ProductImgMap">
+		<result column="product_img_id" property="productImgId" />
+		<result column="product_id" property="productId" />
+		<result column="file_path" property="filePath" />
+		<result column="file_type" property="fileType" />
+	</resultMap>
+
+	<select id="findProductImg" parameterType="Long" resultMap="ProductImgMap">
+		select * from tb_product_img where product_id=#{productId}
+	</select>
+	<insert id="insertProductFile" parameterType="com.business.entity.ProductImg">
+		insert into
+		tb_product_img(product_id, file_path, file_type) values(#{productId},
+		#{filePath}, #{fileType})
+	</insert>
+	<delete id="deleteProductFile" parameterType="com.business.entity.ProductImg">
+		delete from tb_product_img where product_img_id=#{productImgId}
+	</delete>
+
+</mapper>

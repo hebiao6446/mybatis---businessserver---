@@ -1,0 +1,52 @@
+﻿<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<%
+	String menue = request.getParameter("menue");
+	if (menue != null && menue.trim().length() > 0) {
+		request.getSession().setAttribute("menue", menue);
+		String menue2 = request.getParameter("menue2");
+		request.getSession().setAttribute("menue2", menue + menue2);
+
+	}
+%>
+
+<div id="sidebar">
+	<c:choose>
+		<c:when test="${(sessionScope.company.type==2)}">
+			<!-- 超级用户 -->
+			<ul>
+				<li <c:if test="${sessionScope.menue=='manager'}">class="active"</c:if>>
+				<a><i class="icon icon-th"></i> <span>系统管理员</span></a></li>
+				<li
+					<c:if test="${sessionScope.menue=='company'}">class="active"</c:if>>
+					<a href="${ctx}/pages/companyManagerList.jsp?menue=company">
+						<i class="icon icon-th"></i> <span>企业用户管理</span>
+				</a>
+				</li>				
+				<li
+					<c:if test="${sessionScope.menue=='companyAccount'}">class="active"</c:if>>
+					<a href="${ctx}/pages/companyManagerList.jsp?menue=companyAccount">
+						<i class="icon icon-th"></i> <span>企业帐号管理</span>
+				</a>
+				</li>				
+				<li
+					<c:if test="${sessionScope.menue=='userAccount'}">class="active"</c:if>>
+					<a href="${ctx}/pages/companyManagerList.jsp?menue=userAccount">
+						<i class="icon icon-th"></i><span>个人用户管理</span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='accountTotal'}">class="active"</c:if>>
+					<a href="${ctx}/pages/companyManagerList.jsp?menue=accountTotal">
+						<i class="icon icon-th"></i> <span>账号统计</span>
+				</a>
+				</li>				
+		</c:when>
+
+		<c:when test="${(sessionScope.company.type==1)}">
+			<!-- 企业用户 -->
+			<ul>
+			</ul>
+		</c:when>
+	</c:choose>
+</div>

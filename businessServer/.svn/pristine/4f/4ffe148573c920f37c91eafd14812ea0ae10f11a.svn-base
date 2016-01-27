@@ -1,0 +1,27 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Company;
+import com.business.entity.Group;
+import com.business.entity.User;
+import com.json.BaseBean;
+
+
+public interface ContactsManager {
+
+	List<Group> findGroupList(HashMap<String, Object> param);
+
+	Object findGroupListCount(HashMap<String, Object> param);
+
+	void updateGroupInfo(HashMap param);
+	
+
+	
+
+}

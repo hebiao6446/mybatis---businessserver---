@@ -1,0 +1,57 @@
+package com.business.service.impl;
+
+import java.util.HashMap;
+import net.sf.json.JSONObject;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.business.service.UserManager;
+
+@Service
+@Transactional
+public class UserManagerImpl  implements UserManager {
+	@Autowired
+	private SqlSessionTemplate  sqlSession;
+	
+
+	@Override
+	public User findUserInfo(JSONObject param) {
+		
+		return (User) sqlSession.selectOne("User.findUserInfo",param);
+	}
+
+	@Override
+	public Object findUserCompanyId(Long roleId) {
+		Object obj = sqlSession.selectOne("User.findUserCompanyId",roleId);
+		return  obj;
+	}
+	
+	@Override
+	public Company findUserCompany(Long roleId) {
+		
+		return (Company) sqlSession.selectOne("Company.findUserCompany",roleId);
+	}
+	 
+	@Override
+	public Long findUserRoleChidren(Long roleId) {
+		
+		Object obj = sqlSession.selectOne("User.findUserRoleChidren",roleId);
+		return  (Long) obj;
+	}
+
+	@Override
+	public User userLogin(HashMap<String, String> param) {
+		Object obj = sqlSession.selectOne("User.userLogin",param);
+		return (User) obj;
+	}
+
+	@Override
+	public void deleteAllData(HashMap param) {
+		sqlSession.update("User.deleteAllData",param);
+	}
+
+}

@@ -1,0 +1,127 @@
+package com.business.service.impl;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Contacts;
+import com.business.entity.ContactsGroupUser;
+import com.business.entity.Group;
+import com.business.entity.Role;
+import com.business.entity.User;
+import com.business.service.ContactsManager;
+
+@Service
+@Transactional
+public class ContactsManagerImpl implements ContactsManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Override
+	public List<Group> findGroupList(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("Group.findGroupList", param);
+		return (List<Group>) obj;
+	}
+
+	@Override
+	public Object findGroupListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectOne("Group.findGroupListCount", param);
+		return obj;
+	}
+
+	@Override
+	public void updateGroupInfo(HashMap param) {
+		if (Integer.valueOf(param.get("type").toString()) == 3) {
+			sqlSession.update("Contacts.updateContactsGroup", param);
+			sqlSession.delete("Group.deleteGroupInfo", param);
+
+		} else if (param.get("groupId") != null
+				&& param.get("groupId").toString().trim().length() > 0) {
+			sqlSession.update("Group.updateGroupInfo", param);
+		} else {
+			sqlSession.insert("Group.insertGroupInfo", param);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ContactsGroupUser> findGroupContactsList(
+			HashMap<String, Object> param) {
+		return (List<ContactsGroupUser>) sqlSession.selectList(
+				"Contacts.findGroupContactsList", param);
+	}
+
+	@Override
+	public Object findGroupContactsListCount(HashMap<String, Object> param) {
+		return sqlSession.selectOne("Contacts.findGroupContactsListCount",
+				param);
+	}
+
+	@Override
+	public void updateContactsInfo(HashMap param) {
+		if (param.get("contactsId") != null
+				&& param.get("contactsId").toString().trim().length() > 0) {
+			sqlSession.update("Contacts.updateContactsInfo", param);
+		} else {
+			sqlSession.insert("Contacts.insertContactsInfo", param);
+		}
+	}
+
+	@Override
+	public Contacts findContactsInfoByField(HashMap param) {
+
+		return (Contacts) sqlSession.selectOne(
+				"Contacts.findContactsInfoByField", param);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List<HashMap> findMySubContactsList(HashMap param) {
+		String roleids = (String) sqlSession.selectOne(
+				"Contacts.findSubRoleIdList", param);
+		if (roleids == null || roleids.trim().length() == 0) {
+			return Collections.EMPTY_LIST;
+		}
+		param.put("roleId", roleids);
+		List<HashMap> list = (List<HashMap>) sqlSession.selectList(
+				"User.findMySubContactsList", param);
+		return list;
+	}
+
+	@Override
+	public Integer updateUserInfo(HashMap<String, Object> param) {
+		Integer ip = 0;
+		if (param.get("userId") != null && param.get("userId").toString().trim().length() > 0) {
+			ip = sqlSession.update("User.updateUserInfo", param);
+		} else {
+			ip = sqlSession.insert("User.insertUserInfo", param);
+			
+			Long userId = (Long) sqlSession.selectOne("Group.findLastId");
+			
+			HashMap<String, Object> group = new HashMap<String, Object>();
+			group.put("userId", userId);
+			group.put("name", "我的客户");
+			group.put("updateTime", new Date());
+			sqlSession.insert("Group.insertUserGroup", group);
+		}
+		return ip;
+
+	}
+
+	@Override
+	public User findUsersInfoByField(HashMap<String, Object> param) {
+		return (User) sqlSession.selectOne(
+				"User.findUsersInfoByField", param);
+	}
+	@Override
+	public List<Role> findRoleList(HashMap<String, Object> param) {
+		return (List<Role>) sqlSession.selectList("Role.findRoleList", param);
+	}
+
+}

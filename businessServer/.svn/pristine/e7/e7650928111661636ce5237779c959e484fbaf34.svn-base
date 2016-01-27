@@ -1,0 +1,560 @@
+package com.business.action;
+
+import java.sql.Time;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.beans.factory.annotation.Autowired;
+import cn.eavic.framework.web.BaseAction;
+
+import com.common.Commonparam;
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+
+import com.business.service.AttendanceManager;
+import com.business.service.UserManager;
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/")
+@Results({ @Result(name = BaseAction.NONE, location = "attendanceAction.action", type = "redirect") })
+public class AttendanceAction extends ActionSupport {
+	/**
+	 * 考勤模块
+	 */
+	private static final long serialVersionUID = 7655056122242830524L;
+
+	@Autowired
+	AttendanceManager attendanceManager;
+
+	@Autowired
+	UserManager userManager;
+
+	private String username, password;
+	private Integer size, page, signType;
+	private Long companyId;
+	private String groupId, userId, roleId, parentId, name;
+	private String fontTime, backTime, dayTime, content;
+
+	
+
+	/**
+	 * 
+	 * 考勤列表查询
+	 * 
+	 * @throws Exception
+	 */
+	public void findSubUserAttendanceList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			String roleIds = userManager.findChildrenRole(user.getUserId());
+			if (roleIds == null || roleIds.trim().length() == 0) {
+				roleIds = "-1";
+			}
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("roleIds", user.getRoleId() + "," + roleIds);
+			param.put("dayTime", dayTime);
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+			List<Attendance> attendanceList = attendanceManager
+					.findSubUserAttendList(param);
+			bean.setRows(attendanceList);
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 
+	 * 考勤列表查询
+	 * 
+	 * @throws Exception
+	 */
+	public void findAttendanceList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("page", page);
+			param.put("fontTime", fontTime);
+			param.put("backTime", backTime);
+
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+			List<Attendance> attendanceList = attendanceManager
+					.findAttendanceList(param);
+			User attendanceInfo = attendanceManager.findUserBaseInfo(Long
+					.valueOf(param.get("userId").toString()));
+
+			if (attendanceList != null && attendanceList.size() > 0) {
+				for (Attendance attendance : attendanceList) {
+					attendance.setName(attendanceInfo.getName());
+				}
+			}
+			bean.setStatus(200);
+			bean.setRows(attendanceList);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 
+	 * 考勤说明查询
+	 * 
+	 * @throws Exception
+	 */
+	public void findAttendDescriptList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("startIndex", (page - 1) * size);
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+			List<AttendDescript> attendDescriptList = attendanceManager
+					.findAttendDescriptList(param);
+			bean.setStatus(200);
+			bean.setRows(attendDescriptList);
+			bean.setTotal(attendanceManager.findAttendDescriptListCount(param));
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public void updateAttendance() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+
+			Company company = (Company) request.getSession().getAttribute(
+					"company");
+			Attendance attendance = (Attendance) request.getSession()
+					.getAttribute("attendance");
+			Time intime = new java.sql.Time(new Date().getTime());
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("time", intime.toString());
+			param.put("dayTime",
+					new java.sql.Date(new Date().getTime()).toString());
+			param.put("signType", 2);
+			param.put("userId", user.getUserId());
+
+			if (signType != null && "1".equals(String.valueOf(signType))
+					&& attendance.getInTime() == null) {
+				if (intime.before(company.getReportWork())) {
+					param.put("status", 1);
+				} else {
+					param.put("status", 0);
+				}
+				attendanceManager.insertSignAttendance(param);
+				bean.setStatus(200);
+			} else if (signType != null && "2".equals(String.valueOf(signType))
+					&& attendance != null && attendance.getAttendanceId() > 0) {
+				if (intime.before(company.getOutWork())) {
+					if (attendance.getStatus() == 1) {
+						param.put("status", 3);
+					} else if (attendance.getStatus() == 0) {
+						param.put("status", 2);
+					}
+				} else {
+					param.put("status", attendance.getStatus());
+				}
+				attendanceManager.updateSignAttendance(param);
+				bean.setStatus(200);
+			} else {
+				bean.setMsg("canshucuowu!");
+				bean.setStatus(300);
+			}
+			Attendance attendance1 = userManager.findAttendance(param);
+			request.getSession().setAttribute("attendance", attendance1);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public void saveAttendDescInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> map = new HashMap<String, Object>();
+			map.put("userId", user.getUserId());
+			map.put("content", content);
+			map.put("updateTime", Commonparam.Date2Str());
+			map.put("dayTime",
+					new java.sql.Date(new Date().getTime()).toString());
+			attendanceManager.saveAttendDescInfo(map);
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 考勤统计列表查询
+	 * 
+	 * @throws Exception
+	 */
+
+	private String startTime, endTime;
+	private Integer saturday, sunday;
+
+	public void findAttendanceStatisticsList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		User user = (User) request.getSession().getAttribute("user");
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("page", page);
+
+			List<User> userList = attendanceManager.findSubUserList(user);
+
+			for (User userTemp : userList) {
+				param.put("userId", user.getUserId());
+				param.put("startTime", startTime);
+				param.put("endTime", endTime);
+				param.put("saturday", saturday);
+				param.put("sunday", sunday);
+				userTemp.setChidao(attendanceManager.findUserChiDao(param));
+			}
+			bean.setStatus(200);
+			bean.setRows(userList);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 上班时间管理   保存时间  是否需要定位的
+	 */
+	public void saveWorkTime() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> map = new HashMap<String, Object>();
+			map.put("userId", user.getUserId());
+			map.put("content", content);
+			map.put("updateTime", Commonparam.Date2Str());
+			map.put("dayTime",
+					new java.sql.Date(new Date().getTime()).toString());
+			attendanceManager.saveAttendDescInfo(map);
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 查询 上班时间  是否需要考情  获取
+	 */
+	private String workTime, outTime;
+	private int IsOpenGps,wordTimeIsKown;
+	
+//	public void findWorkTime() throws Exception {
+//		HttpServletResponse response = (HttpServletResponse) ActionContext
+//				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+//		HttpServletRequest request = (HttpServletRequest) ActionContext
+//				.getContext().get(ServletActionContext.HTTP_REQUEST);
+//
+//		Company company = (Company) request.getSession().getAttribute("company");
+//
+//		BaseBean bean = new BaseBean();
+//		try {
+//			HashMap<String, Object> param = new HashMap<String, Object>();
+//			param.put("companyId", company.getCompanyId());
+//			
+//			HashMap<String, Object> findWorkOutTime = new HashMap<String, Object>();
+//			findWorkOutTime = attendanceManager.findWorkOutTime(param);
+//			
+//			request.setAttribute("extendInfo", tbFirstExtendInfo);
+//			
+//			bean.setStatus(200);
+//			bean.setRows(findWorkOutTime);
+//		} catch (Exception e) {
+//			bean.setStatus(400);
+//			bean.setMsg(e.getLocalizedMessage());
+//		}
+//		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+//				.toString();
+//		response.getOutputStream().write(json.getBytes("UTF-8"));
+//	}
+
+	
+	
+	
+	
+	public String getWorkTime() {
+		return workTime;
+	}
+
+	public void setWorkTime(String workTime) {
+		this.workTime = workTime;
+	}
+
+	public String getOutTime() {
+		return outTime;
+	}
+
+	public void setOutTime(String outTime) {
+		this.outTime = outTime;
+	}
+
+	public int getIsOpenGps() {
+		return IsOpenGps;
+	}
+
+	public void setIsOpenGps(int isOpenGps) {
+		IsOpenGps = isOpenGps;
+	}
+
+	public int getWordTimeIsKown() {
+		return wordTimeIsKown;
+	}
+
+	public void setWordTimeIsKown(int wordTimeIsKown) {
+		this.wordTimeIsKown = wordTimeIsKown;
+	}
+
+	public Integer getSignType() {
+		return signType;
+	}
+
+	public void setSignType(Integer signType) {
+		this.signType = signType;
+	}
+
+	public String getFontTime() {
+		return fontTime;
+	}
+
+	public void setFontTime(String fontTime) {
+		this.fontTime = fontTime;
+	}
+
+	public String getBackTime() {
+		return backTime;
+	}
+
+	public void setBackTime(String backTime) {
+		this.backTime = backTime;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public Long getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(Long companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public AttendanceManager getAttendanceManager() {
+		return attendanceManager;
+	}
+
+	public void setAttendanceManager(AttendanceManager attendanceManager) {
+		this.attendanceManager = attendanceManager;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	public Integer getPage() {
+		return page;
+	}
+
+	public void setPage(Integer page) {
+		this.page = page;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getDayTime() {
+		return dayTime;
+	}
+
+	public void setDayTime(String dayTime) {
+		this.dayTime = dayTime;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+
+	public String getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public Integer getSaturday() {
+		return saturday;
+	}
+
+	public void setSaturday(Integer saturday) {
+		this.saturday = saturday;
+	}
+
+	public Integer getSunday() {
+		return sunday;
+	}
+
+	public void setSunday(Integer sunday) {
+		this.sunday = sunday;
+	}
+
+}

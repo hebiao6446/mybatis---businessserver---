@@ -1,0 +1,200 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>企业管理</title>
+<style type="text/css">
+.dialogInput {
+	width: 320px;
+	margin-left: 0px;
+	background-color: #FFF;
+}
+
+.dialogDate {
+	width: 90px;
+	margin-left: 0px;
+	background-color: #FFF;
+}
+
+.dialogSelect {
+	width: 120px;
+	margin-left: 10px;
+	background-color: #FFF;
+}
+
+.dialogImg {
+	max-width: 112px;
+	max-height: 120px;
+}
+
+.dialogAmargin {
+	margin: 0px 0 0 30px;
+}
+
+.dialogAmargin>a {
+	font-size: 5px;
+}
+
+.dialogDivImg {
+	width: 120px;
+	height: 120px;
+	float: left;
+}
+</style>
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+				<a href="#" class="current">企业管理</a>
+			</div>
+		</div>
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-title">
+							<span class="icon"> <i class="icon-info-sign"></i>
+							</span>
+							<h5>商品修改</h5>
+						</div>
+						<div class="widget-content nopadding">
+							<form class="form-horizontal" id="formInfo">
+								<div style="width: 100%; float: left;">
+
+									<div style="width: 50%; float: left;">
+
+										<div class="control-group">
+											<label class="control-label">商品名称：</label>
+											<div class="controls">
+												<input class="dialogInput" id="name" name="name"
+													value="${product.productName}">
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label">商品分类：</label>
+											<div class="controls">
+												<c:if test="${empty product.productName}">
+													<select style="width: 140px;" id="categroyId1"
+														onchange="categroyIdChange(this)" name="categroyId1">
+														<c:forEach var="category" items="${categoryList}">
+															<option value="${category.productCategoryId}">${category.name}</option>
+														</c:forEach>
+													</select>&nbsp;&nbsp;--&nbsp;&nbsp;<select style="width: 145px;"
+														id="categroyId" name="categroyId">
+														<c:forEach var="category" items="${categoryList[0].list}">
+															<option value="${category.productCategoryId}">${category.name}</option>
+														</c:forEach>
+													</select>
+												</c:if>
+												<c:if test="${not empty product.productName}">
+													<select style="width: 140px;" id="categroyId1"
+														onchange="categroyIdChange(this)" name="categroyId1">
+														<c:forEach var="category" items="${categoryList}">
+															<option value="${category.productCategoryId}"
+																<c:if test="${category.productCategoryId==parentCategoryId||category.productCategoryId==product.productCategoryId}" 
+																>selected="selected"</c:if>>${category.name}</option>
+														</c:forEach>
+													</select>&nbsp;&nbsp;--&nbsp;&nbsp;<select style="width: 145px;"
+														id="categroyId" name="categroyId">
+														<c:forEach var="category1" items="${categoryList}">
+															<c:if
+																test="${category1.productCategoryId==parentCategoryId||category1.productCategoryId==product.productCategoryId}">
+																<c:forEach var="category" items="${category1.list}">
+																	<option value="${category.productCategoryId}"
+																		<c:if test="${category.productCategoryId==product.productCategoryId}" 
+																>selected="selected"</c:if>>${category.name}</option>
+																</c:forEach>
+															</c:if>
+														</c:forEach>
+													</select>
+												</c:if>
+											</div>
+										</div>
+
+										<div class="control-group">
+											<label class="control-label">商品价格：</label>
+											<div class="controls">
+												<input class="dialogInput" id="price" name="price"
+													value="${product.price}">
+											</div>
+										</div>
+									</div>
+
+
+
+									<div style="width: 50%; float: right;">
+										<div class="control-group">
+											<label class="control-label" style="width: 80px;"><a
+												class="btn btn-mini btn-success">添加图片</a></label>
+											<div class="controls" style="margin-left: 95px;">
+
+												<div class="dialogDivImg">
+													<img alt="" src="${ctx}/images/captionst.jpg"
+														class="dialogImg">
+													<div class="dialogAmargin">
+														<a onclick=""><i class="icon-remove"></i>删除</a> <a
+															onclick=""><i class="icon-search"></i>预览</a>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="control-group">
+									<label class="control-label">商品简介：</label>
+									<div class="controls">
+										<textarea class="dialogInput" id="productContent"
+											name="productContent" style="width: 800px; height: 200px;">${product.content}</textarea>
+									</div>
+								</div>
+
+								<div class="form-actions" style="padding-left: 200px;">
+									<span class="btn btn-warning" onclick="">保&nbsp;&nbsp;存</span>
+									<span class="btn btn-warning" style="margin-left: 100px;"
+										onclick="javascript:history.go(-1);">返&nbsp;&nbsp;回</span>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+</body>
+</html>
+<script type="text/javascript">
+	$(function() {
+		pageInit();
+	});
+	function pageInit() {
+		var str = "Fontface,FontSize,Bold,Italic,Underline,Strikethrough,FontColor,BackColor,SelectAll,Removeformat";
+		str += ",Align,List,Outdent,Indent,Link,Unlink,Anchor,Img,Flash,Media,Hr,Emot,Table,Source,Preview";
+		$('#productContent').xheditor({
+			tools : str,
+			upLinkUrl : "${ctx}/common!uploadHtmlFile.action",
+			upLinkExt : "word,pdf,zip,rar,txt",
+			upImgUrl : "${ctx}/common!uploadHtmlFile.action",
+			upImgExt : "jpg,jpeg,gif,png,JPG,JPEG,GIF,PNG",
+			upFlashUrl : "${ctx}/common!uploadHtmlFile.action",
+			upFlashExt : "swf",
+			upMediaUrl : "${ctx}/common!uploadHtmlFile.action",
+			upMediaExt : "MP4,mp4,MP3,mp3,avi,AVI"
+		});
+
+	}
+
+	function categroyIdChange(obj) {
+		$(obj).val();
+		var i = 1;
+		var str = '${categoryList[' + i + '].list}';
+	}
+</script>
+
+

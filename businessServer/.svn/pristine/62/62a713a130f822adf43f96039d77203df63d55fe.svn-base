@@ -1,0 +1,60 @@
+<%@ page contentType="text/html;charset=UTF-8"%>
+<%@ include file="/common/taglibs.jsp"%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="${ctx}/css/bootstrap.min.css" />
+<link rel="stylesheet" href="${ctx}/css/bootstrap-responsive.min.css" />
+<link rel="stylesheet" href="${ctx}/css/colorpicker.css" />
+<link rel="stylesheet" href="${ctx}/css/datepicker.css" />
+<link rel="stylesheet" href="${ctx}/css/uniform.css" />
+<link rel="stylesheet" href="${ctx}/css/select2.css" />
+<link rel="stylesheet" href="${ctx}/css/matrix-style.css" />
+<link rel="stylesheet" href="${ctx}/css/matrix-media.css" />
+<link rel="stylesheet" href="${ctx}/css/bootstrap-wysihtml5.css" />
+<link href="${ctx}/font-awesome/css/font-awesome.css" rel="stylesheet" />
+<style type="text/css">
+/*  遮罩层 */
+.black_overlay {
+	display: none;
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height:100%;
+	background-color: black;
+	z-index: 1001;
+	-moz-opacity: 0.8;
+	opacity: .80;
+	filter: alpha(opacity = 80);
+}
+</style>
+</head>
+<body> 
+<div id="header">
+	<img src="${ctx}/img/logoT.png" width="200px" height="70px" style="max-width: 200px;max-height: 75px;min-width: 220px;min-height: 75px;" /></div>
+<div id="user-nav" class="navbar navbar-inverse">
+  <ul class="nav">
+    <li  class="dropdown" id="profile-messages" ><a title="" href="#" data-toggle="dropdown" data-target="#profile-messages" class="dropdown-toggle"><i class="icon icon-user"></i>  <span class="text">欢迎${user.account}</span><b class="caret"></b></a>
+      <ul class="dropdown-menu">
+        <li><a href="javascript:void(0)" onclick="logout()"><i class="icon-user"></i> 退出登录</a></li>
+      </ul>
+    </li>   
+  </ul>
+</div>
+<form id="formturn" method="post">
+  
+</form>
+<script type="text/javascript">
+function logout(){
+	if(window.confirm('您确定退出吗?')){
+		window.location.href="${ctx}/pages/login.jsp";
+	}	
+}
+</script>
+</body>
+</html>

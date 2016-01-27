@@ -1,0 +1,112 @@
+﻿<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<%
+	String menue = request.getParameter("menue");
+	if (menue != null && menue.trim().length() > 0) {
+		request.getSession().setAttribute("menue", menue);
+		String menue2 = request.getParameter("menue2");
+		request.getSession().setAttribute("menue2", menue + menue2);
+
+	}
+%>
+
+<div id="sidebar">
+	<c:choose>
+		<c:when test="${(sessionScope.company.type==2)}">
+			<!-- 超级用户 -->
+			<ul>
+				<li><a><i class="icon icon-th"></i> <span>系统管理员</span></a></li>
+				<li
+					<c:if test="${sessionScope.menue=='companyManager'}">class="active"</c:if>>
+					<a href="${ctx}/pages/companyManagerList.jsp?menue=companyManager">
+						<i class="icon icon-th"></i> <span>企业及管理</span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='blessingsManager'}">class="active"</c:if>>
+					<a
+					href="${ctx}/pages/blessingsManagerList.jsp?menue=blessingsManager">
+						<i class="icon icon-th"></i> <span>节日祝福语</span>
+				</a>
+				</li>
+				<li><a><i class="icon icon-th"></i> <span>意见及建议</span></a></li>
+			</ul>
+		</c:when>
+
+		<c:when test="${(sessionScope.company.type==1)}">
+			<!-- 企业用户 -->
+			<ul>
+				<li
+					<c:if test="${sessionScope.menue=='roleManager'}">class="active"</c:if>>
+					<a href="${ctx}/pages/roleManagerList.jsp?menue=roleManager"> <i
+						class="icon icon-pencil"></i> <span>角色管理</span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='attendanceManager'}">class="active"</c:if>>
+					<a
+					href="${ctx}/pages/attendanceManagerList.jsp?menue=attendanceManager">
+						<i class="icon icon-th"></i> <span>考勤管理</span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='mySubManager'}">class="active"</c:if>>
+					<a href="${ctx}/pages/mySubUserManagerList.jsp?menue=mySubManager">
+						<i class="icon icon-th"></i> <span>下属人员</span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='productManager'}">class="active"</c:if>>
+					<a href="#"><i
+						class="icon icon-th"></i> <span>企业商品</span></a>
+				</li>
+				<li class="submenu"><a><i class="icon icon-th"></i> <span>个人信息</span></a>
+					<ul>
+						<li><a>我的代办</a></li>
+						<li><a>我的项目</a></li>
+						<li><a>我的销售</a></li>
+						<li><a>我的考勤</a></li>
+						<li><a
+							href="${ctx}/pages/groupManagerList.jsp?menue=contactsManager">
+								联系人分组 </a></li>
+						<li><a
+							href="${ctx}/pages/contactsManagerList.jsp?menue=contactsManager">
+								我的联系人 </a></li>
+					</ul></li>
+				<li><a><i class="icon icon-th"></i> <span>更多功能</span></a></li>
+				<li>
+					<a href="${ctx}/pages/mySubattendanceManagerList.jsp">
+						<i class="icon icon-th"></i> <span>下属人员</span>
+				</a>
+				</li>
+			</ul>
+		</c:when>
+
+		<c:when test="${(sessionScope.company.type==0)}">
+			<!-- 个人用户 -->
+			<ul>
+				<li><a><i class="icon icon-th"></i> <span>我的项目</span></a></li>
+				<li><a><i class="icon icon-th"></i> <span>我的代办</span></a></li>
+				<li><a
+					href="${ctx}/pages/groupManagerList.jsp?menue=contactsManager">
+						<i class="icon icon-th"></i> <span>联系人分组</span>
+				</a></li>
+				<li
+					<c:if test="${sessionScope.menue=='contactsManager'}">class="active"</c:if>>
+					<a
+					href="${ctx}/pages/contactsManagerList.jsp?menue=contactsManager">
+						<i class="icon icon-th"></i> <span>我的联系人 </span>
+				</a>
+				</li>
+				<li
+					<c:if test="${sessionScope.menue=='attendanceManager'}">class="active"</c:if>>
+					<a
+					href="${ctx}/pages/attendanceManagerList.jsp?menue=attendanceManager">
+						<i class="icon icon-th"></i> <span>我的考勤</span>
+				</a>
+				</li>
+				<li><a><i class="icon icon-th"></i> <span>更多功能</span></a></li>
+			</ul>
+		</c:when>
+	</c:choose>
+</div>

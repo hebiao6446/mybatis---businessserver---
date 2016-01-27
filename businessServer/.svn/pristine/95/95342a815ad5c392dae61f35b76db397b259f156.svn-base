@@ -1,0 +1,77 @@
+
+input {
+	cursor: pointer;
+}
+
+.tdbc {
+	background: url("./1.png") no-repeat;
+	cursor: pointer;
+	text-align: center;
+	font-size: 12px;
+	width: 18px;
+	vertical-align: top;
+	height: 22px;
+	color: #FFF;
+}
+
+.tdbb {
+	background: url("./2.png") no-repeat;
+	cursor: pointer;
+	text-align: center;
+	font-size: 12px;
+	width: 18px;
+	vertical-align: top;
+	height: 22px;
+	color: #FFF;
+}
+.tdbw {
+	width: 2px;
+}
+
+.tdbx {
+	font-size: 14px;
+	width: 60px;
+	text-align: left;
+	font-family: '微软雅黑';
+}
+
+.tdbt {
+	text-align: center;
+	font-size: 12px;
+	width: 18px;
+	vertical-align: top;
+	height: 22px;
+	cursor: pointer;
+	background: url("./3.png") no-repeat;
+}
+
+.title2 {
+	font-size: 12px;
+	width: 18px;
+	vertical-align: top;
+	height: 20px;
+	text-align: right;
+	background: url('./2.png') no-repeat;
+}
+
+.title1 {
+	font-size: 12px;
+	width: 18px;
+	vertical-align: top;
+	height: 20px;
+	text-align: right;
+	background: url('./1.png') no-repeat;
+}
+.tdpt{
+	width: 18px;
+}
+
+.span-spans{
+	font-size:14px;
+	text-align: right;
+	margin-right: 20px;
+	padding-right:20px;
+	color: red;
+	cursor: pointer;
+}
+

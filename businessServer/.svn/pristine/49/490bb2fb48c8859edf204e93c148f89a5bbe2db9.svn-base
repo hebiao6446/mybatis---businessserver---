@@ -1,0 +1,95 @@
+package com.business.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.Role;
+import com.business.entity.User;
+import com.business.service.UserManager;
+
+@Service
+@Transactional
+public class UserManagerImpl implements UserManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Override
+	public User findUserInfo(JSONObject param) {
+
+		return (User) sqlSession.selectOne("User.findUserInfo", param);
+	}
+
+	@Override
+	public Object findUserCompanyId(Long roleId) {
+		return sqlSession.selectOne("User.findUserCompanyId", roleId);
+	}
+
+	@Override
+	public Company findUserCompany(Long roleId) {
+		return (Company) sqlSession
+				.selectOne("Company.findUserCompany", roleId);
+	}
+
+	@Override
+	public Long findUserRoleChidren(Long roleId) {
+		return (Long) sqlSession.selectOne("User.findUserRoleChidren", roleId);
+	}
+
+	@Override
+	public User userLogin(HashMap<String, String> param) {
+		Object obj = sqlSession.selectOne("User.userLogin", param);
+		return (User) obj;
+	}
+
+	@Override
+	public void deleteAllData(HashMap param) {
+		sqlSession.update("User.deleteAllData", param);
+	}
+
+	@Override
+	public String findChildrenRole(Long userId) {
+		return (String) sqlSession.selectOne("User.findUserSubRoleIdList",
+				userId);
+	}
+
+	@Override
+	public Attendance findAttendance(HashMap map) {
+		return (Attendance) sqlSession.selectOne("Attendance.findAttendance",
+				map);
+	}
+
+	@Override
+	public List finduserAccountList(HashMap<String, Object> param) {
+		return sqlSession.selectList("User.finduserAccountList", param);
+	}
+
+	@Override
+	public Object finduserAccountListCount(HashMap<String, Object> param) {
+		return sqlSession.selectOne("User.finduserAccountListCount", param);
+	}
+
+	@Override
+	public void deleteUserQllData(HashMap param) {
+		sqlSession.update("User.deleteUserQllData", param);
+	}
+
+	@Override
+	public void deleteUserAllData(HashMap param) {
+		sqlSession.update("User.deleteUserAllData", param);
+	}
+
+	@Override
+	public List findUserAccountInfo(HashMap<String, Object> param) {
+		return  sqlSession.selectList("User.findUserAccountInfo",param);
+	}
+
+
+}

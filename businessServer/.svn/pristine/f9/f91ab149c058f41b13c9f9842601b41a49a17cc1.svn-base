@@ -1,0 +1,95 @@
+package com.business.service.impl;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONObject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.common.Commonparam;
+import com.business.entity.Company;
+import com.business.entity.Contacts;
+import com.business.entity.Group;
+import com.business.entity.Role;
+import com.business.entity.User;
+import com.business.service.ContactsManager;
+import com.business.service.RoleManager;
+import com.business.service.UserManager;
+import com.json.BaseBean;
+
+@Service
+@Transactional
+public class RoleManagerImpl implements RoleManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Override
+	public List<Role> findRoleList(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("Role.findRoleList", param);
+		return (List<Role>) obj;
+	}
+
+	@Override
+	public void updateRoleInfo(HashMap param) {
+		if (param.get("roleId") != null && param.get("roleId").toString().trim().length() > 0) {
+			sqlSession.update("Role.updateRoleInfo", param);
+		} else {
+			sqlSession.insert("Role.insertRoleInfo", param);
+
+		}
+	}
+
+	@Override
+	public Role findRoleInfoByField(HashMap param) {
+		
+		return (Role) sqlSession.selectOne("Role.findRoleInfoByField",param);
+	}
+
+	@Override
+	public List<User> findUserRoleList(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectList("User.findUserRoleList", param);
+		return (List<User>) obj;
+	}
+	
+	
+	@Override
+	public Object findUserRoleListCount(HashMap<String, Object> param) {
+		Object obj = sqlSession.selectOne("User.findUserRoleListCount", param);
+		return obj;
+	}
+
+	@Override
+	public User findUserInfoByField(HashMap param) {
+		return (User) sqlSession.selectOne("User.findUserInfoByField",param);
+	}
+
+	@Override
+	public void updateUserInfo(HashMap param) {
+		if(param.get("userId")!=null && param.get("userId").toString().trim().length()>0){
+			sqlSession.update("User.updateUserInfo",param);
+		}
+		else{
+			sqlSession.insert("User.insertUserInfo",param);
+		}
+	}
+
+	
+
+
+
+}

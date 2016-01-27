@@ -1,0 +1,14 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.business.entity.Sell;
+
+public interface SellManager {
+
+	List<Sell> findUserSellList(HashMap<String, Object> param);
+
+	Object findUserSellListCount(HashMap<String, Object> param);
+
+}

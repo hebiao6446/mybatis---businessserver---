@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Sell">
+	<resultMap type="Sell" id="SellMap">
+		<result column="sell_id" property="sellId" />
+		<result column="user_id" property="userId" />
+		<result column="contacts_id" property="contactsId" />
+		<result column="sell_method" property="sellMethod" />
+		<result column="status" property="status" />
+		<result column="total_price" property="totalPrice" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<select id="findUserSellList" parameterType="java.util.HashMap"
+		resultType="com.business.entity.Sell">
+		SELECT s.sell_id sellId, s.contacts_id contactsId, s.update_time updateTime,
+		s.user_id userId, s.sell_method sellMethod, s.status, s.total_price
+		totalPrice, u.name userName, c.name contactsName, c.company
+		contactsCompany from
+		tb_sell s join tb_user u on s.user_id=u.user_id
+		join tb_contacts c on
+		s.contacts_id=c.contacts_id where s.delete_flag=1
+		and (u.role_id IN(${roleIds}) or u.user_id=#{userId})
+		order by
+		u.user_id,s.sell_id limit ${startIndex},${size}
+	</select>
+	<select id="findUserSellListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		SELECT count(*) from tb_sell s join tb_user u on
+		s.user_id=u.user_id
+		join tb_contacts c on s.contacts_id=c.contacts_id
+		where s.delete_flag=1
+		and (u.role_id IN(${roleIds}) or
+		u.user_id=#{userId})
+		order by u.user_id limit ${startIndex},${size}
+	</select>
+	<select id="findUserSellInfo" parameterType="Long"
+		resultType="com.business.entity.Sell">
+		SELECT s.sell_id sellId, s.contacts_id contactsId,
+		s.user_id userId, s.sell_method sellMethod, s.status, s.total_price
+		totalPrice, u.name userName, c.name contactsName, c.company
+		contactsCompany from
+		tb_sell s join tb_user u on s.user_id=u.user_id
+		join tb_contacts c on
+		s.contacts_id=c.contacts_id where
+		sell_id=#{sellId}
+	</select>
+	<insert id="insertSellInfo" parameterType="com.business.entity.Sell">
+		insert into
+		tb_sell(contacts_id, user_id, sell_method, status, total_price,
+		delete_flag, update_time) values(#{contactsId}, #{userId},
+		#{sellMethod}, #{status}, #{totalPrice}, #{deleteFlag}, #{updateTime})
+	</insert>
+	<select id="findIdBySellInfo" parameterType="com.business.entity.Sell"
+		resultType="Long">
+		select sell_id from tb_sell where contacts_id=#{contactsId}
+		and
+		user_id=#{userId} and sell_method=#{sellMethod} and
+		status=#{status} and total_price=#{totalPrice} and
+		update_time=#{updateTime}
+	</select>
+	<update id="updateSellInfo" parameterType="com.business.entity.Sell">
+		update tb_sell
+		<set>
+			<if test="sellMethod!=null and sellMethod!=''">
+				sell_method=#{sellMethod},
+			</if>
+			<if test="status!=null and status!='' and status!=0">
+				status=#{status},
+			</if>
+			<if test="totalPrice!=null and totalPrice!=''">
+				total_price=#{totalPrice},
+			</if>
+			<if test="updateTime!=null and updateTime!=''">
+				update_time=#{updateTime},
+			</if>
+			<if test="deleteFlag!=null and deleteFlag!=''">
+				delete_flag=#{deleteFlag},
+			</if>
+		</set>
+		where sell_id=#{sellId}
+	</update>
+
+</mapper>

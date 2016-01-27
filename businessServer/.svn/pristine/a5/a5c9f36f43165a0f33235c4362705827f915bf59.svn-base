@@ -1,0 +1,276 @@
+package com.business.action;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.beans.factory.annotation.Autowired;
+import cn.eavic.framework.web.BaseAction;
+
+import com.common.Commonparam;
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.User;
+
+import com.business.service.AttendanceManager;
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/")
+@Results({ @Result(name = BaseAction.NONE, location = "attendanceAction.action", type = "redirect") })
+public class AttendanceAction extends ActionSupport {
+	/**
+	 * 考勤模块
+	 */
+	private static final long serialVersionUID = 7655056122242830524L;
+
+	@Autowired
+	AttendanceManager attendanceManager;
+
+	private String username, password;
+	private Integer size, page;
+	private Long companyId;
+
+	private String groupId, userId, roleId, parentId, name;
+
+	private String fontTime, backTime;
+
+	/**
+	 * 
+	 * 考勤列表查询
+	 * 
+	 * @throws Exception
+	 */
+
+	public void findAttendanceList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		User user = (User) request.getSession().getAttribute("user");
+
+		BaseBean bean = new BaseBean();
+
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("page", page);
+			param.put("fontTime", fontTime);
+			param.put("backTime", backTime);
+
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+
+			List<Attendance> attendanceList = attendanceManager
+					.findAttendanceList(param);
+			
+			User attendanceInfo = attendanceManager
+			.findUserBaseInfo(Long.valueOf(param.get("userId").toString()));
+
+			for (Attendance attendance : attendanceList) {				
+					attendance.setName(attendanceInfo.getName());				
+			}
+
+			bean.setStatus(200);
+			bean.setRows(attendanceList);	
+
+		} catch (Exception e) {
+
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 
+	 * 考勤说明查询
+	 * 
+	 * @throws Exception
+	 */
+
+	public void findAttendDescriptList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		User user = (User) request.getSession().getAttribute("user");
+
+		BaseBean bean = new BaseBean();
+
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("startIndex", (page - 1) * size);
+
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+
+			List<AttendDescript> attendDescriptList = attendanceManager
+					.findAttendDescriptList(param);
+
+			bean.setStatus(200);
+			bean.setRows(attendDescriptList);
+			bean.setTotal(attendanceManager.findAttendDescriptListCount(param));
+
+		} catch (Exception e) {
+
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public String getFontTime() {
+		return fontTime;
+	}
+
+	public void setFontTime(String fontTime) {
+		this.fontTime = fontTime;
+	}
+
+	public String getBackTime() {
+		return backTime;
+	}
+
+	public void setBackTime(String backTime) {
+		this.backTime = backTime;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public Long getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(Long companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public AttendanceManager getAttendanceManager() {
+		return attendanceManager;
+	}
+
+	public void setAttendanceManager(AttendanceManager attendanceManager) {
+		this.attendanceManager = attendanceManager;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	public Integer getPage() {
+		return page;
+	}
+
+	public void setPage(Integer page) {
+		this.page = page;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+}

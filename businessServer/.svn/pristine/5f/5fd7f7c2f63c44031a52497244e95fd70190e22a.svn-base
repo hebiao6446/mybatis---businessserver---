@@ -1,0 +1,619 @@
+package com.business.action;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.beans.factory.annotation.Autowired;
+import cn.eavic.framework.web.BaseAction;
+
+import com.common.Commonparam;
+import com.business.entity.Company;
+import com.business.entity.Contacts;
+import com.business.entity.ContactsGroupUser;
+import com.business.entity.Group;
+import com.business.entity.Role;
+import com.business.entity.User;
+
+import com.business.service.ContactsManager;
+import com.business.service.UserManager;
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/")
+@Results({ @Result(name = BaseAction.NONE, location = "contactsAction.action", type = "redirect") })
+public class ContactsAction extends ActionSupport {
+	/**
+	 * 联系人模块
+	 */
+	private static final long serialVersionUID = 7655056122242830524L;
+
+	@Autowired
+	ContactsManager contactsManager;	
+	@Autowired
+	UserManager userManager;
+
+	private String username, password;
+	private Integer size, page;
+	private String companyId;
+	private String groupId, userId, type,roleId;
+	private String contactsId;
+	private String name;
+	private String isDefault;
+	private Date updateTime;
+	private Integer deleteFlag;
+	private String address;
+	private String email;
+	private String company;
+	private String phone;
+	private String fax;
+	private String mobile;
+	private String qq;
+	private String job;
+	private String business;
+	private String firstLetter;
+	private String account;
+
+	private String attendance;
+
+
+	/**
+	 * 联系人分组列表
+	 * 
+	 * @throws Exception
+	 */
+
+	public void findGroupList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+
+		try {
+			if (user == null) {
+				bean.setMsg("未登录！");
+			} else {
+				HashMap<String, Object> param = new HashMap<String, Object>();
+
+				if (size != null && size != 0) {
+					param.put("size", size);
+					param.put("startIndex", (page - 1) * size);
+				}
+				if (userId == null || userId.trim().equals("")) {
+					param.put("userId", user.getUserId());
+				} else {
+					param.put("userId", userId);
+				}
+				List<Group> groupList = contactsManager.findGroupList(param);
+
+				bean.setStatus(200);
+				bean.setRows(groupList);
+				bean.setTotal(contactsManager.findGroupListCount(param));
+			}
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 添加，修改分组名称
+	 * 
+	 * @throws Exception
+	 */
+
+	public void updateGroupInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("type", type);
+			param.put("groupId", groupId);
+			param.put("userId", user.getUserId());
+			param.put("name", name);
+			param.put("updateTime", new Date());
+
+			contactsManager.updateGroupInfo(param);
+			bean.setStatus(200);
+
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg("保存失败!");
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 联系人列表————————分组ID查询
+	 * 
+	 * @throws Exception
+	 */
+
+	public void findGroupContactsList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		BaseBean bean = new BaseBean();
+
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("startIndex", (page - 1) * size);			
+			param.put("company", company);
+			param.put("phone", phone);
+			param.put("name", name);
+			param.put("business", business);		
+			param.put("job", job);		
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+				String roleIds=userManager.findChildrenRole(user.getUserId());
+				if (roleIds == null || roleIds.trim().length() == 0) {
+					roleIds="-1";
+				}
+				param.put("roleIds", roleIds);
+			} else {
+				param.put("userId", userId);
+				param.put("roleIds", "-1");
+			}
+			List<ContactsGroupUser> groupcontactsList = contactsManager
+					.findGroupContactsList(param);
+			bean.setStatus(200);
+			bean.setRows(groupcontactsList);
+			bean.setTotal(contactsManager.findGroupContactsListCount(param));
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 添加,新增 联系人列表————————分组ID查询
+	 * 
+	 * @throws Exception
+	 */
+	public void updateContactsInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("contactsId", contactsId);
+			param.put("groupId", groupId);
+			param.put("name", name);
+			param.put("address", address);
+			param.put("email", email);
+			param.put("company", company);
+			param.put("phone", phone);
+			param.put("fax", fax);
+			param.put("mobile", mobile);
+			param.put("qq", qq);
+			param.put("job", job);
+			param.put("firstLetter", Commonparam.getfirstLetter(name));
+			param.put("business", business);
+			param.put("updateTime", new Date());
+
+			contactsManager.updateContactsInfo(param);
+
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg("保存失败!");
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	
+	
+	
+	/**
+	 * 添加,新增 用户下属人员
+	 * 
+	 * @throws Exception
+	 */
+	public void updateUserInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("roleId", roleId);
+			param.put("name", name);
+			param.put("account", account);
+			param.put("password",Commonparam.Md5String(password));		
+			param.put("phone", phone);
+			param.put("firstLetter", Commonparam.getfirstLetter(name));
+			param.put("attendance","T");
+			param.put("deleteFlag",1);
+			param.put("status",1);
+			param.put("updateTime", Commonparam.Date2Str());
+			contactsManager.updateUserInfo(param);
+
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * 查询联系人
+	 * 
+	 * @throws Exception
+	 */
+	public void findUsersInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		Company company = (Company) request.getSession().getAttribute("company");
+		try {
+			User users = null;
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			if (userId != null && !"".equals(userId.trim())) {
+				param.put("field", "user_id");
+				param.put("fieldValue", userId);
+				users = (User) contactsManager.findUsersInfoByField(param);
+			} else {
+				users = new User();
+			}
+
+			if (companyId == null || companyId.trim().equals("")) {
+				param.put("companyId", company.getCompanyId());
+			} else {
+				param.put("companyId", companyId);
+			}
+			List<Role> roleList = contactsManager.findRoleList(param);
+			request.setAttribute("usersInfo", users);
+			request.setAttribute("roleList", roleList);
+			request.getRequestDispatcher("/pages/usersManagerUpdate.jsp")
+					.forward(request, response);
+		} catch (Exception e) {
+		}
+	}
+	
+	
+	/**
+	 * 查询联系人
+	 * 
+	 * @throws Exception
+	 */
+	public void findContactsInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		User user = (User) request.getSession().getAttribute("user");
+		try {
+			Contacts contacts = null;
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			if (contactsId != null && !"".equals(contactsId.trim())) {
+				param.put("field", "contacts_id");
+				param.put("fieldValue", contactsId);
+				contacts = (Contacts) contactsManager
+						.findContactsInfoByField(param);
+			} else {
+				contacts = new Contacts();
+			}
+
+			if (userId == null || userId.trim().equals("")) {
+				param.put("userId", user.getUserId());
+			} else {
+				param.put("userId", userId);
+			}
+			List<Group> groupList = contactsManager.findGroupList(param);
+			request.setAttribute("contactsInfo", contacts);
+			request.setAttribute("groupList", groupList);
+			request.getRequestDispatcher("/pages/contactsManagerUpdate.jsp")
+					.forward(request, response);
+		} catch (Exception e) {
+		}
+	}
+
+	/**
+	 * 下属——————————联系人列表
+	 * 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("rawtypes")
+	public void findMySubContactsList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		User user = (User) request.getSession().getAttribute("user");
+		Company company = (Company) request.getSession().getAttribute("company");
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("userId", user.getUserId());
+			param.put("companyId", company.getCompanyId());
+//			param.put("size", size);
+//			param.put("startIndex", (page-1)*size);
+			List<HashMap> groupList = contactsManager.findMySubContactsList(param);
+
+			bean.setStatus(200);
+			bean.setRows(groupList);
+			bean.setTotal(contactsManager.findMySubContactsListCount(param));
+
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
+	}
+
+	public String getAttendance() {
+		return attendance;
+	}
+
+	public void setAttendance(String attendance) {
+		this.attendance = attendance;
+	}
+
+	public String getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
+
+	public String getContactsId() {
+		return contactsId;
+	}
+
+	public void setContactsId(String contactsId) {
+		this.contactsId = contactsId;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getFax() {
+		return fax;
+	}
+
+	public void setFax(String fax) {
+		this.fax = fax;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+	public String getQq() {
+		return qq;
+	}
+
+	public void setQq(String qq) {
+		this.qq = qq;
+	}
+
+	public String getJob() {
+		return job;
+	}
+
+	public void setJob(String job) {
+		this.job = job;
+	}
+
+	public String getBusiness() {
+		return business;
+	}
+
+	public void setBusiness(String business) {
+		this.business = business;
+	}
+
+	public String getFirstLetter() {
+		return firstLetter;
+	}
+
+	public void setFirstLetter(String firstLetter) {
+		this.firstLetter = firstLetter;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getIsDefault() {
+		return isDefault;
+	}
+
+	public void setIsDefault(String isDefault) {
+		this.isDefault = isDefault;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public Integer getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(Integer deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+	public ContactsManager getContactsManager() {
+		return contactsManager;
+	}
+
+	public void setContactsManager(ContactsManager contactsManager) {
+		this.contactsManager = contactsManager;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	public Integer getPage() {
+		return page;
+	}
+
+	public void setPage(Integer page) {
+		this.page = page;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+}

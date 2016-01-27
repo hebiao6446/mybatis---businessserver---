@@ -1,0 +1,158 @@
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<% String strDate=new SimpleDateFormat("yyyy-MM-dd").format(new Date()); %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>下属考勤人员管理</title>
+<style type="text/css">
+.white_content {
+	display: none;
+	position: fixed;
+	top: 30%;
+	left: 30%;
+	width: 405px;
+	height: 245px;
+	border: 2px solid lightblue;
+	background-color: #efefef;
+	z-index: 1002;
+	overflow: auto;
+}
+
+#table_content td {
+	text-align: center;
+}
+</style>
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+				<a href="#" class="current">下属考勤人员管理</a>
+			</div>
+		</div>
+
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12" style="font-size: 14px; font-weight: bold;">
+					签到日期：
+					<button onclick="updateAttendTime(-1)">
+						<i class="icon-backward"></i>
+					</button>
+					<input style="margin-left: 10px;" id="dayTime" class="Wdate" value="${strDate}"
+						onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'});loadData();" />
+					<button onclick="updateAttendTime(1)">
+						<i class="icon-forward"></i>
+					</button>
+				</div>
+			</div>
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-title">
+							<span class="icon"> <i class="icon-info-sign"></i>
+							</span>
+							<h5>下属人员考勤列表</h5>
+						</div>
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th width="5%"></th>
+									<th width="8%" style="font-size: 12px;">签到日期</th>
+									<th width="9%" style="font-size: 12px;">签到人姓名</th>
+									<th width="10%" style="font-size: 12px;">签到时间</th>
+									<th width="10%" style="font-size: 12px;">签到方式</th>
+									<th width="10%" style="font-size: 12px;">签到地址</th>
+									<th width="10%" style="font-size: 12px;">签退时间</th>
+									<th width="10%" style="font-size: 12px;">签退方式</th>
+									<th width="10%" style="font-size: 12px;">签退地址</th>
+									<th width="8%" style="font-size: 12px;">考勤状态</th>
+									<th width="15%" style="font-size: 12px;">考勤说明</th>
+								</tr>
+							</thead>
+							<tbody id="table_content">
+							</tbody>
+						</table>
+						<div class="widget-title"
+							style="height: 40px; border: 1px solid #ccc; padding-bottom: 4px; padding-left: 20px;">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+
+</body>
+</html>
+<script type="text/javascript">
+	$(function() {
+		loadData();
+	});
+
+	function loadData() {
+		$.ajax({
+			type : "post",
+			url : '${ctx}/attendance!findSubUserAttendanceList.action',
+			dataType : 'json',
+			data : {dayTime : $('#dayTime').val()},
+			success : function(msg, status) {
+				if (msg.status == 200) {
+					var array = [];
+					for ( var i = 0; i < msg.rows.length; i++) {
+						var data = msg.rows[i];
+						array.push('<tr>');
+						array.push('<td>' + data["userId"] + '</td>');
+						array.push('<td>' + $('#dayTime').val() + '</td>');
+						array.push('<td>' + data["name"] + '</td>');
+						if (data["attendanceId"] == 0
+								|| data["attendanceId"] == '') {
+							array.push('<td colspan="8">未考勤</td>');
+						} else {
+							array.push('<td>' + data["inTime"] + '</td>');
+							array.push('<td>' + data[""] + '</td>');
+							array.push('<td>' + data["inAddress"] + '</td>');
+							array.push('<td>' + data["outTime"] + '</td>');
+							array.push('<td>' + data[""] + '</td>');
+							array.push('<td>' + data["outAddress"] + '</td>');
+							array.push('<td>' + data["userId"] + '</td>');
+							array.push('<td>' + data["userId"] + '</td>');
+							array.push('</tr>');
+						}
+					}
+					$('#table_content').html(array.join(''));
+				} else {
+					alert(msg.msg);
+				}
+			}
+		});
+
+	}
+
+	function updateAttendTime(add) {
+		var str = $.trim($('#dayTime').val());
+		var date;
+		if (str == '' || str.length == 0) {
+			date = new Date();
+		} else {
+			date = new Date(Date.parse(str));
+		}
+		date.setDate(date.getDate() + add);
+		var year = date.getFullYear();
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		var str1 = year + '-' + (month < 10 ? '0' + month : month) + '-'
+				+ (day < 10 ? '0' + day : day);
+		$('#dayTime').val(str1);
+		loadData();
+	}
+</script>
+
+

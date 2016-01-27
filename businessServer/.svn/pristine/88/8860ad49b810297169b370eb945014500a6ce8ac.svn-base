@@ -1,0 +1,112 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>商品管理</title>
+<style type="text/css">
+.titlestyle{
+font-weight: bold;font-size: 16px;
+text-align: right;
+}
+.titlestyle tr:hover{
+background:#efefef;
+}
+.table td{
+vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+
+				<a href="${ctx}/pages/index.jsp?menue="> <i class="icon-home"></i>首页
+				</a> <a href="javascript:void(0)" class="current">商品列表</a>
+			</div>
+		</div>
+		<div class="container-fluid">
+
+			<div style="padding: 10px 0 0 0;">
+				<table class="titlestyle">
+					<tr valign="middle">
+						<td width="120px">一级分类：</td>
+						<td width="160px">
+							<div class="controls">
+								<select style="height: 25px; width: 150px;">
+									
+								</select>
+							</div>
+						</td>
+						<td width="120px">二级分类：</td>
+						<td width="160px">
+							<div class="controls">
+								<select style="height: 25px; width: 150px;">
+									
+								</select>
+							</div>
+						</td>
+						<td style="text-align: left;"><button class="btn btn-success" onclick="loadnewData(10)"
+								style="font-size: 20px; cursor: pointer;margin-left: 20px;">查询</button></td>
+					</tr>
+				</table>
+			</div>
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-title">
+							<span class="icon"> <i class="icon-info-sign"></i>
+							</span>
+							<h5>商品维护</h5>
+						</div>
+						<div class="widget-content nopadding">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+</body>
+</html>
+<script type="text/javascript">
+$(function(){
+	selectProductCategory(0,'firstCategory');
+});
+
+function selectProductCategory(categoryId,obj){
+	$.ajax({
+		type:'post',
+		url:'',
+		dataType:'',
+		data:{},
+		success:function(msg){
+			if(msg.status==200){
+				
+			}else{
+				alert(msg.msg);
+			}
+			
+		}
+		
+	});
+}
+
+	
+</script>
+
+

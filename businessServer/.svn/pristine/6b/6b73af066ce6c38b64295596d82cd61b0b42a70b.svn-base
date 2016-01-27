@@ -1,0 +1,165 @@
+package com.common;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javapns.back.PushNotificationManager;
+import javapns.back.SSLConnectionHelper;
+import javapns.data.Device;
+import javapns.data.PayLoad;
+
+import org.slf4j.LoggerFactory;
+
+public class PushUtils {
+
+	/************************************************
+	 * 测试推送服务器地址：gateway.sandbox.push.apple.com /2195
+	 * 产品推送服务器地址：gateway.push.apple.com / 2195
+	 ***************************************************/
+	private static String host = "gateway.sandbox.push.apple.com";
+	private static int port = 2195;
+	private static String p12FilePassword = "123456";
+
+	public static void main(String[] args) throws Exception {
+
+		List<String> deviceTokens = new ArrayList<String>();
+		deviceTokens.add("d773e9a99f9f3cfe27b65d5fe577a3399f1c924e6a97cce1135df24212008c9b");
+
+		String content = "小芬芬,永远18岁！！";// push的内容
+		String p12File = "d:/cert.p12";// 这里是一个.p12格式的文件路径，需要去apple官网申请一个
+		push2More(p12File, deviceTokens, null,1);// 群组推送
+	   // push2One(p12File, deviceToken2,content);// 单个推送
+
+	}
+
+	/**
+	 * 向单个iphone手机推送消息.
+	 * 
+	 * @param deviceToken
+	 *            iphone手机获取的token
+	 * @param p12File
+	 *            .p12格式的文件路径
+	 * @param p12Pass
+	 *            .p12格式的文件密码
+	 * @param customDictionarys
+	 *            CustomDictionary字典组
+	 * @param content
+	 *            推送内容
+	 */
+	public static void push2One(String p12File, String deviceToken,
+			String content) {
+		try {
+			PayLoad payLoad = new PayLoad();
+			payLoad.addAlert(content);// push的内容
+			payLoad.addBadge(1);// 应用图标上小红圈上的数值
+			payLoad.addSound("default");// 铃音
+
+			// 添加字典
+			payLoad.addCustomDictionary("url", "www.baidu.com");
+			PushNotificationManager pushManager = PushNotificationManager
+					.getInstance();
+			pushManager.addDevice("iphone", deviceToken);
+
+			// 链接到APNs
+			pushManager.initializeConnection(host, port, p12File,
+					p12FilePassword, SSLConnectionHelper.KEYSTORE_TYPE_PKCS12);
+
+			// 开始推送
+			Device client = pushManager.getDevice("iphone");
+			pushManager.sendNotification(client, payLoad);
+			// 断开链接
+			pushManager.stopConnection();
+			pushManager.removeDevice("iphone");
+
+		} catch (Exception e) {
+
+		}
+	}
+
+	/**
+	 * 向iphone群组推送消息.
+	 * 
+	 * @param deviceTokens
+	 *            iphone手机获取的token
+	 * @param p12File
+	 *            .p12格式的文件路径
+	 * @param p12Pass
+	 *            .p12格式的文件密码
+	 * @param customDictionarys
+	 *            CustomDictionary字典
+	 * @param content
+	 *            推送内容
+	 */
+	public static void push2More(String p12File, List<String> deviceTokens,
+			 HashMap dic, int pushType) {
+		PushNotificationManager pushManager = null;
+		try {
+			PayLoad payLoad = new PayLoad();
+
+			payLoad.addBadge(1);// 应用图标上小红圈上的数值
+			payLoad.addSound("default");// 铃音
+			payLoad.addCustomDictionary("msgType", pushType);
+
+			if (pushType == 1) {
+				payLoad.addAlert("您有新的消息啦");
+
+			} else if (pushType == 2) {
+				payLoad.addAlert("版本更新");
+				//payLoad.addCustomDictionary("alertTitle", "新版本更新");
+				//payLoad.addCustomDictionary("alertBody", "新版本更新内容");
+				//payLoad.addCustomDictionary("versionUrl",
+				//		"http://www.baidu.com");
+			}
+			// 添加字典
+			if(dic !=null){
+				for (Object key : dic.keySet()) {
+					payLoad.addCustomDictionary(key.toString(), dic.get(key)
+							.toString());
+				}
+			}
+			
+
+			pushManager = PushNotificationManager.getInstance();
+
+			// 链接到APNs
+			pushManager.initializeConnection(host, port, p12File,
+					p12FilePassword, SSLConnectionHelper.KEYSTORE_TYPE_PKCS12);
+
+			// 开始循环推送
+			for (int i = 0; i < deviceTokens.size(); i++) {
+				if (deviceTokens.get(i) == null
+						|| deviceTokens.get(i).toString().trim().length() == 0)
+					continue;
+				pushManager.addDevice("iphone" + i, deviceTokens.get(i).toString());
+				Device client = pushManager.getDevice("iphone" + i);
+				pushManager.sendNotification(client, payLoad);
+				
+				
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.getLocalizedMessage());
+		} finally {
+			if (pushManager != null) {
+				// 断开链接
+				try {
+					pushManager.stopConnection();
+					for (int i = 0; i < deviceTokens.size(); i++) {
+						if (deviceTokens.get(i) == null
+								|| deviceTokens.get(i).toString().trim().length() == 0)
+							continue;
+						pushManager.removeDevice("iphone" + i);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+		}
+	}
+}

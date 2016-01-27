@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Product">
+
+	<resultMap type="Product" id="ProductMap">
+		<result column="product_id" property="productId" />
+		<result column="product_category_id" property="productCategoryId" />
+		<result column="product_name" property="productName" />
+		<result column="content" property="content" />
+		<result column="price" property="price" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<select id="findProductList" parameterType="java.util.HashMap"
+		resultMap="ProductMap">
+		select * from tb_product where delete_flag=1
+		<if test="productName!=null and productName!=''">
+			and (product_name like '%${productName}%'or content like
+			'%${productName}%')
+		</if>
+		<if test="categoryId!=null and categoryId!=''">
+			and (product_category_id=#{categoryId} or
+			product_category_id in(select product_category_id from
+			tb_product_category WHERE
+			company_id=#{companyId} and
+			parent_id=#{categoryId}))
+		</if>
+		<if test="categoryId==null or categoryId==''">
+			and product_category_id in(select product_category_id from
+			tb_product_category WHERE
+			company_id=#{companyId})
+		</if>
+		order by product_id limit ${startIndex},${size}
+	</select>
+	<select id="findProductListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_product where delete_flag=1
+		<if test="productName!=null and productName!=''">
+			and (product_name like '%${productName}%' or content like
+			'%${productName}%')
+		</if>
+		<if test="categoryId!=null and categoryId!=''">
+			and (product_category_id=#{categoryId} or
+			product_category_id in(select product_category_id from
+			tb_product_category WHERE
+			company_id=#{companyId} and
+			parent_id=#{categoryId}))
+		</if>
+		<if test="categoryId==null or categoryId==''">
+			and product_category_id in(select product_category_id from
+			tb_product_category WHERE
+			company_id=#{companyId})
+		</if>
+	</select>
+	<select id="findProductInfo" parameterType="java.util.HashMap"
+		resultMap="ProductMap">
+		select * from tb_product where delete_flag=1 and product_id=#{productId}
+	</select>
+
+</mapper>

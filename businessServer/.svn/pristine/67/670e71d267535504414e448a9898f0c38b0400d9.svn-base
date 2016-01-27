@@ -1,0 +1,14 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import com.business.entity.User;
+import com.json.BaseBean;
+
+
+public interface UserManager {
+	
+}

@@ -1,0 +1,150 @@
+<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>用户管理</title>
+<style type="text/css">
+
+</style>
+
+
+</head>
+<body>
+
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<jsp:include page="/common/leftmenue.jsp"></jsp:include>
+<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+				<a href="${ctx}/pages/menuManagerList.jsp" title="菜单导航" class="tip-bottom">
+				<i class="icon-home"></i> 菜单导航</a> 
+				<a href="${ctx}/pages/knowledgeManagerList.jsp" title="知识库管理" class="tip-bottom">
+				<i class="icon-home"></i>知识库管理</a> 
+				<a href="#" class="current">知识库维护</a>
+			</div>
+		</div>
+	
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-title">
+							<span class="icon"> <i class="icon-info-sign"></i>
+							</span>
+							<h5>知识库维护</h5>
+						</div>
+
+						<div class="widget-content nopadding">
+							<form class="form-horizontal" id="formInfo">
+								
+											<div class="control-group">
+												<label class="control-label">标题：</label>
+												<div class="controls">
+													<input type="text"id="title" name="title" placeholder="请输入标题"
+														value="${knowledgeInfo.title}" style="width: 700px;"
+														
+														/> 
+														<span  style="color:red"><font color="red"	id="title_check"> </font>*必填项</span>
+												</div>
+											</div>
+											<div class="control-group">
+												<label class="control-label">介绍：</label>
+												<div class="controls" >
+													<input type="text"  id="introduction" name="introduction" placeholder="请输入介绍"
+														value="${knowledgeInfo.introduction}" style="width:700px;"/> 
+														<span style="color:red"><font color="red"	id="introduction_check"> </font>*必填项</span>
+												</div>
+											</div>
+											
+										<div class="control-group">
+										<label class="control-label">内容：</label>
+										<div class="controls" style="height: 280px">
+											<textarea name="content" class="shop_announcement"  placeholder="请输入内容"
+												style="height: 180px; width:780px;" id="Kcontent">${knowledgeInfo.content}</textarea>
+											<span><font color="red" id="Kcontent"> </font></span>
+										</div>
+									</div>
+												
+												
+												
+																				
+
+								<div class="form-actions" style="padding-left:200px;">
+									<button class="btn btn-warning" type="button"
+										onclick="saveKnowledgeInfo()">确认保存</button>
+										&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										<button class="btn btn-warning" type="button"
+										onclick="window.history.go(-1)">&nbsp;&nbsp;返回&nbsp;&nbsp;</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+
+	
+
+
+	<jsp:include page="/common/buttom.jsp"></jsp:include>
+
+	
+</body>
+</html>
+<script type="text/javascript">
+	
+
+	$(function() {
+
+		$(pageInit);
+		function pageInit() {
+
+			var str = "Fontface,FontSize,Bold,Italic,Underline,Strikethrough,FontColor,BackColor,SelectAll,Removeformat";
+			str += ",Align,List,Outdent,Indent,Link,Unlink,Anchor,Img,Flash,	Media,Hr,Emot,Table,Source,Preview";
+			$('#Kcontent').xheditor({
+				tools : str,
+				upLinkUrl : "${ctx}/common!uploadHtmlFile.action",
+				upLinkExt : "word,pdf,zip,rar,txt",
+				upImgUrl : "${ctx}/common!uploadHtmlFile.action",
+				upImgExt : "jpg,jpeg,gif,png,JPG,JPEG,GIF,PNG",
+				upFlashUrl : "${ctx}/common!uploadHtmlFile.action",
+				upFlashExt : "swf",
+				upMediaUrl : "${ctx}/common!uploadHtmlFile.action",
+				upMediaExt : "MP4,mp4,MP3,mp3,avi,AVI"
+			});
+		}
+
+	}); 
+	function saveKnowledgeInfo() {
+	
+		var param = {knowledgeId:"${knowledgeInfo.knowledgeId}"};
+		if($.trim($('#title').val()).length==0){
+			$('#title_check').html('名称不为空！');
+			return;
+		}
+		param["title"]=$.trim($('#title').val());
+		param["introduction"]=$.trim($('#introduction').val());
+		param["content"]=$.trim($('#Kcontent').val());
+		
+	
+		$.ajax({
+					type : "post",
+					url : '${ctx}/knowledge!updateKnowledgeInfo.action',
+					dataType : 'json',
+					data : param,
+					success : function(msg, status) {
+						if (msg.status == 200) {
+							alert('保存成功!');
+							window.history.go(-1);
+						} else {
+							alert(msg.msg);
+
+						}
+					}
+				});
+	}
+
+
+</script>
+</body>
+</html>
+

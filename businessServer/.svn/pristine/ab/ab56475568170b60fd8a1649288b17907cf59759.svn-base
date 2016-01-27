@@ -1,0 +1,30 @@
+package com.business.service;
+
+import java.util.HashMap;
+
+import net.sf.json.JSONObject;
+
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+
+public interface UserManager {
+	
+
+	User findUserInfo(JSONObject param);
+
+	Object findUserCompanyId(Long roleId);
+
+	Company findUserCompany(Long roleId);
+
+	Long findUserRoleChidren(Long roleId);
+
+	User userLogin(HashMap<String, String> param);
+
+	void deleteAllData(HashMap param);
+
+	String findChildrenRole(Long userId);
+
+	Attendance findAttendance(HashMap map);
+
+}

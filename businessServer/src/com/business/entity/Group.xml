@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Group">
+	<resultMap type="Group" id="GroupMap">
+		<result column="group_id" property="groupId" />
+		<result column="user_id" property="userId" />
+		<result column="name" property="name" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="is_default" property="isDefault" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<select id="findGroupList" parameterType="java.util.HashMap"
+		resultMap="GroupMap">
+		select * from tb_group where delete_flag=1 and
+		user_id=#{userId} order
+		by group_id
+		<if test="startIndex!=null">
+			limit ${startIndex},${size}
+		</if>
+	</select>
+
+	<select id="findGroupListCount" parameterType="java.util.HashMap"
+		resultType="Long">
+		select count(*) from tb_group where delete_flag=1 and
+		user_id=#{userId}
+	</select>
+
+	<update id="updateGroupInfo" parameterType="java.util.HashMap">
+		update tb_group set
+		name=#{name} where group_id=#{groupId}
+	</update>
+
+	<insert id="insertGroupInfo" parameterType="java.util.HashMap">
+		insert into
+		tb_group(name,is_default,update_time,user_id,delete_flag)
+		values(#{name},'F',#{updateTime},#{userId},1)
+	</insert>
+
+	<delete id="deleteGroupInfo" parameterType="java.util.HashMap">
+		delete from tb_group
+		where group_id=#{groupId} and is_default='F'
+	</delete>
+	<select id="findLastId" resultType="Long">
+		select user_id from tb_user
+		order by user_id desc limit 0,1
+	</select>
+
+	
+	<insert id="insertUserGroup" parameterType="java.util.HashMap" >
+	    insert into
+		tb_group(user_id,update_time,delete_flag,name,is_default)
+		values(#{userId},#{updateTime},1,#{name},'T')
+	    
+	</insert>
+	
+</mapper>

@@ -1,0 +1,470 @@
+package com.business.action;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.beans.factory.annotation.Autowired;
+import cn.eavic.framework.web.BaseAction;
+import com.common.Commonparam;
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.Role;
+import com.business.entity.User;
+
+import com.business.service.RoleManager;
+import com.business.service.UserManager;
+
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/")
+@Results({ @Result(name = BaseAction.NONE, location = "userAction.action", type = "redirect") })
+public class UserAction extends ActionSupport {
+	/**
+	 * 用户模块
+	 */
+	private static final long serialVersionUID = 7655056122242830524L;
+
+	@Autowired
+	UserManager userManager;
+
+	@Autowired
+	RoleManager roleManager;
+
+	private String username, password;
+	private Integer size, page;
+	private Long companyId;
+	private String phone, startEnable, endEnable, startDisable, endDisable;
+
+	/**
+	 * 登录
+	 * 
+	 * @throws Exception
+	 */
+	public void userLogin() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+
+			HashMap<String, String> param = new HashMap<String, String>();
+
+			param.put("username", username);
+			param.put("password", Commonparam.Md5String(password));
+
+			User user = userManager.userLogin(param);
+
+			if (user == null) {
+				bean.setStatus(400);
+				bean.setMsg("账号密码错误!");
+			} else {
+				Company company = userManager.findUserCompany(user.getRoleId());
+				if (company != null && company.getType() == 1) {
+					Long count = userManager.findUserRoleChidren(user
+							.getRoleId());
+					if (count > 0) {
+						user.setIsLeader(1);
+					} else {
+						user.setIsLeader(0);
+					}
+				} else {
+					user.setIsLeader(0);
+				}
+				HashMap<String, Object> pam = new HashMap<String, Object>();
+				pam.put("field", "role_id");
+				pam.put("fieldValue", user.getRoleId());
+				Role role = (Role) roleManager.findRoleInfoByField(pam);
+
+				HashMap<String, Object> map = new HashMap<String, Object>();
+				map.put("userId", user.getUserId());
+				map.put("dayTime",
+						new java.sql.Date(new Date().getTime()).toString());
+				Attendance attendance = userManager.findAttendance(map);
+
+				request.getSession().setAttribute("user", user);
+				request.getSession().setAttribute("company", company);
+				request.getSession().setAttribute("role", role);
+				request.getSession().setAttribute("attendance", attendance);
+				bean.setStatus(200);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	private String table, pk, fields;
+
+	/**
+	 * 删除公共方法
+	 * 
+	 * @throws Exception
+	 */
+	public void deleteAllData() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			if (table.equals("group")) {
+				param.put("table", "tb_group");
+				param.put("pk", "group_id");
+			} else if (table.equals("contacts")) {
+				param.put("table", "tb_contacts");
+				param.put("pk", "contacts_id");
+
+			} else if (table.equals("role")) {
+				param.put("table", "tb_role");
+				param.put("pk", "role_id");
+
+			} else if (table.equals("user")) {
+				param.put("table", "tb_user");
+				param.put("pk", "user_id");
+
+			} else if (table.equals("comapny")) {
+				param.put("table", "tb_comapny");
+				param.put("pk", "company_id");
+
+			} else if (table.equals("attendance")) {
+				param.put("table", "tb_attendance");
+				param.put("pk", "attendance_id");
+
+			}
+			param.put("ids", fields.split(","));
+			userManager.deleteAllData(param);
+
+			bean.setStatus(200);
+		} catch (Exception ee0) {
+			bean.setStatus(400);
+			bean.setMsg("删除失败!");
+		}
+
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public void finduserAccountList() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("size", size);
+			param.put("startIndex", (page - 1) * size);
+			param.put("name", username);
+			param.put("phone", phone);
+			param.put("startEnable", startEnable);
+			param.put("endEnable", endEnable);
+			param.put("startDisable", startDisable);
+			param.put("endDisable", endDisable);
+			List list = userManager.finduserAccountList(param);
+			bean.setRows(list);
+			bean.setTotal(userManager.finduserAccountListCount(param));
+			bean.setStatus(200);
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 关闭个人用户状态方法
+	 * 
+	 * @throws Exception
+	 */
+	public void deleteUserAllData() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap param = new HashMap();
+			if (table.equals("user")) {
+				param.put("table", "tb_user");
+				param.put("pk", "user_id");
+			}
+			param.put("ids", fields.split(","));
+			userManager.deleteUserAllData(param);
+
+			bean.setStatus(200);
+		} catch (Exception ee0) {
+			ee0.printStackTrace();
+			bean.setStatus(400);
+			bean.setMsg("删除失败!");
+		}
+
+		String json = JSONObject.fromObject(bean,
+				Commonparam.getJsonConfig("yyyy-MM-dd HH:mm:ss")).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 开启个人用户状态方法
+	 * 
+	 * @throws Exception
+	 */
+	public void deleteUserQllData() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap param = new HashMap();
+			if (table.equals("user")) {
+				param.put("table", "tb_user");
+				param.put("pk", "user_id");
+			}
+			param.put("ids", fields.split(","));
+			userManager.deleteUserQllData(param);
+
+			bean.setStatus(200);
+		} catch (Exception ee0) {
+			bean.setStatus(400);
+			bean.setMsg("删除失败!");
+		}
+
+		String json = JSONObject.fromObject(bean,
+				Commonparam.getJsonConfig("yyyy-MM-dd HH:mm:ss")).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public void findUserAccountInfo() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		BaseBean bean = new BaseBean();
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("username", username);
+			param.put("password", password);
+			List list = userManager.findUserAccountInfo(param);
+
+			if (list != null && list.size() > 0) {
+				bean.setStatus(400);
+				bean.setMsg("已存在该账号");
+			} else {
+				bean.setStatus(200);
+
+			}
+
+		} catch (Exception e) {
+			bean.setStatus(400);
+			bean.setMsg(e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean, Commonparam.getJsonConfig())
+				.toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 修改密码
+	 * 
+	 * @return
+	 */
+	private String oldPassword, newPassword;
+
+	public void updateUserPass() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+
+		User user = (User) request.getSession().getAttribute("user");
+
+		BaseBean bean = new BaseBean();
+		JSONObject jsonrt = new JSONObject();
+		try {
+
+			if (user == null) {
+
+				bean.setStatus(400);
+				bean.setMsg("请重新登陆!");
+
+			} else {
+				if (user.getPassword().equals(
+						Commonparam.Md5String(oldPassword))) {
+					HashMap param = new HashMap();
+					param.put("userId", user.getUserId());
+					param.put("newPassword", Commonparam.Md5String(newPassword));
+					param.put("updateTime", Commonparam.Date2Str());
+
+					userManager.updateUserPass(param);
+					bean.setStatus(200);
+					bean.setMsg("修改成功!");
+				} else {
+					jsonrt.put("status", 400);
+					jsonrt.put("msg", "旧密码不正确!");
+				}
+
+			}
+
+		} catch (Exception ee0) {
+			bean.setStatus(400);
+			bean.setMsg("修改失败！");
+		}
+
+		String json = JSONObject.fromObject(bean,
+				Commonparam.getJsonConfig("yyyy-MM-dd HH:mm:ss")).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public String getOldPassword() {
+		return oldPassword;
+	}
+
+	public void setOldPassword(String oldPassword) {
+		this.oldPassword = oldPassword;
+	}
+
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
+	}
+
+	public String getTable() {
+		return table;
+	}
+
+	public void setTable(String table) {
+		this.table = table;
+	}
+
+	public String getPk() {
+		return pk;
+	}
+
+	public void setPk(String pk) {
+		this.pk = pk;
+	}
+
+	public String getFields() {
+		return fields;
+	}
+
+	public void setFields(String fields) {
+		this.fields = fields;
+	}
+
+	public UserManager getUserManager() {
+		return userManager;
+	}
+
+	public void setUserManager(UserManager userManager) {
+		this.userManager = userManager;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public Long getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(Long companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	public Integer getPage() {
+		return page;
+	}
+
+	public void setPage(Integer page) {
+		this.page = page;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getStartEnable() {
+		return startEnable;
+	}
+
+	public void setStartEnable(String startEnable) {
+		this.startEnable = startEnable;
+	}
+
+	public String getEndEnable() {
+		return endEnable;
+	}
+
+	public void setEndEnable(String endEnable) {
+		this.endEnable = endEnable;
+	}
+
+	public String getStartDisable() {
+		return startDisable;
+	}
+
+	public void setStartDisable(String startDisable) {
+		this.startDisable = startDisable;
+	}
+
+	public String getEndDisable() {
+		return endDisable;
+	}
+
+	public void setEndDisable(String endDisable) {
+		this.endDisable = endDisable;
+	}
+
+}

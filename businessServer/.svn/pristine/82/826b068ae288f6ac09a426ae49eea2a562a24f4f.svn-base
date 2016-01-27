@@ -1,0 +1,29 @@
+package com.common;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PushThread12 extends Thread {
+    private String p12Path;
+    private ArrayList<String> deviceTokens;
+    private String content;
+    private String urlpath;
+    private String urlNum;
+    
+	public PushThread12(String p12Path, ArrayList<String> deviceTokens, String content, String urlpath, String urlNum){
+		this.p12Path =  p12Path;
+		this.deviceTokens = deviceTokens;
+		this.content = content;
+		this.urlpath = urlpath;
+		this.urlNum = urlNum;
+	}
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		super.run();
+		PushUtils12.push2More(p12Path, deviceTokens,content,urlpath,urlNum);
+		
+	}
+
+	
+}

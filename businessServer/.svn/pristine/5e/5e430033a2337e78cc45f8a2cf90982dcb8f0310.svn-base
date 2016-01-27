@@ -1,0 +1,30 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.json.BaseBean;
+
+
+public interface UserManager {
+	
+
+	User findUserInfo(JSONObject param);
+
+	Object findUserCompanyId(Long roleId);
+
+	Company findUserCompany(Long roleId);
+
+	Long findUserRoleChidren(Long roleId);
+
+	User userLogin(HashMap<String, String> param);
+
+	void deleteAllData(HashMap param);
+
+}

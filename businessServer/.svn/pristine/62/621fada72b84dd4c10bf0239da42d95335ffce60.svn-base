@@ -1,0 +1,38 @@
+﻿<%@page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ include file="/common/checklogin.jsp"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<%
+	String menue = request.getParameter("menue");
+	if (menue != null && menue.trim().length() > 0) {
+		request.getSession().setAttribute("menue", menue);
+		String menue2 = request.getParameter("menue2");
+		request.getSession().setAttribute("menue2", menue + menue2);
+
+	}
+%>
+<head>
+<style type="text/css">
+.achoose {
+	background-color: #27a9e3;
+}
+</style>
+</head>
+<body>
+	<div id="sidebar">
+		<c:choose>
+
+
+
+
+			<ul>
+				<li
+					<c:if test="${sessionScope.menue=='userManager'}">class="active"</c:if>>
+					<a href="${ctx}/pages/userManagerList.jsp?menue=userManager"> <i
+						class="icon icon-pencil"></i> <span>联系人管理</span> </a></li>
+						</ul>
+		</c:choose>
+	</div>
+</body>
+</html>
+

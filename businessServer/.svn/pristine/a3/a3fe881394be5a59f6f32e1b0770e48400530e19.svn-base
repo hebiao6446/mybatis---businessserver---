@@ -1,0 +1,33 @@
+package com.business.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Sell;
+import com.business.service.SellManager;
+
+@Service
+@Transactional
+public class SellManagerImpl implements SellManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Sell> findUserSellList(HashMap<String, Object> param) {
+		
+		return (List<Sell>) sqlSession.selectList("Sell.findUserSellList",param);
+	}
+
+	@Override
+	public Object findUserSellListCount(HashMap<String, Object> param) {
+		
+		return sqlSession.selectOne("Sell.findUserSellListCount",param);
+	}
+
+}

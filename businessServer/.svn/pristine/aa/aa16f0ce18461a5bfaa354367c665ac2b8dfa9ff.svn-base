@@ -1,0 +1,25 @@
+package com.business.service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.business.entity.Things;
+import com.business.entity.ThingsFile;
+import com.business.entity.ThingsFinish;
+import com.business.entity.ThingsThingsFinish;
+
+public interface ThingsManager {
+
+	List<ThingsThingsFinish> findUserThingsList(HashMap<String, Object> param);
+
+	Object findUserThingsListCount(HashMap<String, Object> param);
+
+	Things findThingsInfo(HashMap map);
+
+	List<ThingsFile> findThingsFileList(HashMap map);
+
+	List<ThingsFinish> findThingsFinishList(HashMap map);
+
+	void updateThingsInfo(Things t, List<Long> addUsers, List<Long> deleteUsers);
+
+}
